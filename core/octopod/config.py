@@ -12,6 +12,7 @@ class Config(BaseSettings):
     S3_ACCESS_KEY_ID: str = "minio"
     S3_SECRET_ACCESS_KEY: str = "minio123"
     S3_UPLOAD_BUCKET: str = "uploads"
+    S3_HIGHLIGHT_BUCKET: str = "highlights"
 
     REDIS_HOST: str = Field(default="localhost")
 

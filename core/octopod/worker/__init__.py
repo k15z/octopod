@@ -259,6 +259,19 @@ async def handle(submission_id: UUID):
                 session.add(highlight)
                 await session.commit()
 
+                source[highlight.start_time * 1000 : highlight.end_time * 1000].export(
+                    f"/tmp/{highlight.id}.mp3", format="mp3"
+                )
+                try:
+                    s3.create_bucket(Bucket=config.S3_HIGHLIGHT_BUCKET)
+                except Exception:
+                    pass
+                s3.upload_file(
+                    f"/tmp/{highlight.id}.mp3",
+                    config.S3_HIGHLIGHT_BUCKET,
+                    f"{highlight.id}.mp3",
+                )
+
         run.status = "COMPLETE"
         run.progress = 1.0
         await session.commit()

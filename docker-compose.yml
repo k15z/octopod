@@ -4,6 +4,13 @@ volumes:
   minio_data:
 services:
 
+  js:
+    build:
+      context: ./js
+      dockerfile: Dockerfile
+    ports:
+      - 8080:3000
+
   app:
     build:
       context: ./core

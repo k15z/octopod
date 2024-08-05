@@ -5,6 +5,8 @@ from typing import List
 from uuid import UUID
 
 import boto3
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
 from fastapi import FastAPI, Depends, File, HTTPException, UploadFile
 from sqlalchemy import select, text
@@ -20,7 +22,16 @@ from octopod.database import AsyncSession, get_db, Submission, Run
 app = FastAPI(
     title="Octopod",
     description="Octopod is an API for extracting highlights from podcast-like audio files.",
+    generate_unique_id_function=lambda route: route.endpoint.__name__,
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 queue = Queue(connection=Redis(host=config.REDIS_HOST))
 
 
@@ -107,7 +118,7 @@ async def submit(
         aws_secret_access_key=config.S3_SECRET_ACCESS_KEY,
     )
     try:
-        s3.create_bucket(Bucket="uploads")
+        s3.create_bucket(Bucket=config.S3_UPLOAD_BUCKET)
     except Exception:
         pass
     s3.upload_file(local_file, config.S3_UPLOAD_BUCKET, destination)
@@ -212,3 +223,22 @@ async def get_submission(
             else []
         ),
     )
+
+
+@app.get("/api/v1/highlight/{highlight_id}")
+def get_highlight(
+    highlight_id: UUID
+):
+    """Return the MP3 from S3."""
+    key = f"{str(highlight_id)}.mp3"
+    s3 = boto3.client(
+        "s3",
+        endpoint_url=config.S3_ENDPOINT_URL,
+        aws_access_key_id=config.S3_ACCESS_KEY_ID,
+        aws_secret_access_key=config.S3_SECRET_ACCESS_KEY,
+    )
+    try:
+        s3.download_file(config.S3_HIGHLIGHT_BUCKET, key, "/tmp/tmp.mp3")
+    except Exception:
+        raise HTTPException(status_code=404, detail="Highlight not found")
+    return FileResponse("/tmp/tmp.mp3")

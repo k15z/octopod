@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import boto3
 import dirtyjson
 from openai import OpenAI
+from pydub import AudioSegment
 from mako.template import Template
 from sqlalchemy.sql.expression import select
 
@@ -204,34 +205,51 @@ async def handle(submission_id: UUID):
         await session.refresh(run)
         print(f"Created run {run.id}")
 
-        # Transcribe audio
-        print("Transcribing audio")
-        stt_client = OpenAI(base_url="http://70.228.65.239:8000/v1/")
-        with open("/tmp/tmp.mp3", "rb") as audio_file:
-            response = stt_client.audio.transcriptions.create(
-                file=audio_file,
-                model="Systran/faster-whisper-small",
-                response_format="verbose_json",
-                timestamp_granularities=["segment"],
-            )
-        print("Transcription complete")
+        segments = []
+        current_offset = 0
+        chunk_millisecs = 5 * 60 * 1000
+        source = AudioSegment.from_file("/tmp/tmp.mp3")
+        for i in range(0, len(source), chunk_millisecs):
+            chunk_file = f"/tmp/tmp_{i}.mp3"
+            run.progress = i / len(source)
+            await session.commit()
 
-        segments = [
-            Segment(
-                run_id=run.id,
-                start_time=segment["start"],
-                end_time=segment["end"],
-                text=segment["text"],
+            chunk = source[i : i + chunk_millisecs]
+            chunk.export(chunk_file, format="mp3")
+
+            # Transcribe audio
+            print(f"Transcribing audio part {i}")
+            stt_client = OpenAI()
+            with open(chunk_file, "rb") as audio_file:
+                response = stt_client.audio.transcriptions.create(
+                    file=audio_file,
+                    model="whisper-1",
+                    response_format="verbose_json",
+                    timestamp_granularities=["segment"],
+                )
+            print("Transcription complete")
+
+            segments.extend(
+                [
+                    Segment(
+                        run_id=run.id,
+                        start_time=segment["start"] + current_offset / 1000,
+                        end_time=segment["end"] + current_offset / 1000,
+                        text=segment["text"],
+                    )
+                    for segment in response.segments
+                ]
             )
-            for segment in response.segments
-        ]
+            current_offset += chunk_millisecs
         run.status = "ANALYZE"
         session.add_all(segments)
         await session.commit()
 
         # Extract topics and highlights
         windows = segments_to_windows(segments)
-        for window in windows:
+        for i, window in enumerate(windows):
+            run.progress = i / len(windows)
+            await session.commit()
             for topic in window.topics():
                 print(f"Extracting highlight for {topic.title}")
                 highlight = window.highlight(topic)
@@ -240,10 +258,11 @@ async def handle(submission_id: UUID):
                 highlight.run_id = run.id
                 session.add(highlight)
                 await session.commit()
-        
+
         run.status = "COMPLETE"
+        run.progress = 1.0
         await session.commit()
 
 
 if __name__ == "__main__":
-    asyncio.run(handle("3429418f-9123-4e1d-8ec1-182b69c9df66"))
+    asyncio.run(handle("0befe212-3099-4fdc-8f62-02c7df6e5656"))

@@ -1,10 +1,7 @@
-import asyncio
 from datetime import datetime
 from typing import AsyncGenerator
 from uuid import uuid4, UUID
 from sqlalchemy import DateTime, ForeignKey
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import (
     AsyncAttrs,
     create_async_engine,
@@ -99,7 +96,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         await db.close()
 
 
-async def initialize():
+async def initialize(drop=False):
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        if drop:
+            await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)

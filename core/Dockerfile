@@ -2,6 +2,10 @@ FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY Pipfile Pipfile.lock /app/
 RUN pip install --upgrade pip wheel setuptools && \
     pip install --user --no-warn-script-location pipenv && \
@@ -9,9 +13,10 @@ RUN pip install --upgrade pip wheel setuptools && \
     rm -rf ~/.cache ~/.local
 
 COPY octopod /app/octopod
+COPY scripts /app/scripts
+COPY run.sh /app/
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
-ENTRYPOINT ["uvicorn"]
-CMD ["--host", "0.0.0.0", "octopod.core.server:app"]
+ENTRYPOINT ["bash", "run.sh"]

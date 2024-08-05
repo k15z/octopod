@@ -6,7 +6,7 @@ from uuid import UUID
 
 import boto3
 from pydub import AudioSegment
-from fastapi import FastAPI, Depends, File, UploadFile
+from fastapi import FastAPI, Depends, File, HTTPException, UploadFile
 from sqlalchemy import select, text
 from redis import Redis
 from rq import Queue
@@ -14,20 +14,14 @@ from pydantic import BaseModel
 
 from octopod.worker import handle
 from octopod.config import config
-from octopod.database import initialize, AsyncSession, get_db, Submission, Run
-
-
-async def lifespan(app):
-    # await initialize()
-    yield
+from octopod.database import AsyncSession, get_db, Submission, Run
 
 
 app = FastAPI(
     title="Octopod",
     description="Octopod is an API for extracting highlights from podcast-like audio files.",
-    lifespan=lifespan,
 )
-queue = Queue(connection=Redis())
+queue = Queue(connection=Redis(host=config.REDIS_HOST))
 
 
 def get_md5_hash(file_path):
@@ -51,6 +45,7 @@ class SubmissionResponse(BaseModel):
     id: UUID
     duration: float
     status: str
+    progress: float
 
 
 class SubmissionWithHighlightsResponse(SubmissionResponse):
@@ -70,7 +65,7 @@ async def submit(
 
     Example:
     ```
-    curl -s http://localhost:8000/api/v1/submit -F "file=@prototype/content/browser.mp3"
+    curl -s http://localhost:8000/api/v1/submit -F "file=@examples/pharma.mp3"
     ```
     """
     # Write to a temporary file
@@ -113,7 +108,7 @@ async def submit(
     )
     try:
         s3.create_bucket(Bucket="uploads")
-    except Exception as e:
+    except Exception:
         pass
     s3.upload_file(local_file, config.S3_UPLOAD_BUCKET, destination)
     print(f"Uploaded to S3: {destination}")
@@ -123,6 +118,7 @@ async def submit(
         id=submission.id,
         duration=submission.duration,
         status="IN_QUEUE",
+        progress=0.0,
     )
 
 
@@ -132,7 +128,8 @@ async def list_submissions(
 ) -> ListSubmissionResponse:
     """List all submission IDs."""
     # Raw SQL since I can't be bothered to figure out how to do this with SQLAlchemy
-    q = text("""
+    q = text(
+        """
     WITH most_recent_run AS (
         SELECT
             submission_id,
@@ -146,7 +143,8 @@ async def list_submissions(
     SELECT
         submission.id,
         submission.duration,
-        run.status
+        run.status,
+        run.progress
     FROM
         submission
     LEFT JOIN
@@ -154,18 +152,21 @@ async def list_submissions(
     LEFT JOIN
         most_recent_run ON submission.id = most_recent_run.submission_id
     WHERE run.created_at = most_recent_run.created_at OR run.created_at IS NULL
-    """)
+    """
+    )
 
     result = await db.execute(q)
     rows = result.fetchall()
-    print(rows)
 
     return ListSubmissionResponse(
         submissions=[
             SubmissionResponse(
-                id=id, duration=duration, status=status or "IN_QUEUE"
+                id=id,
+                duration=duration,
+                status=status or "IN_QUEUE",
+                progress=progress or 0.0,
             )
-            for id, duration, status in rows
+            for id, duration, status, progress in rows
         ]
     )
 
@@ -177,6 +178,8 @@ async def get_submission(
 ) -> SubmissionWithHighlightsResponse:
     """Get the most recent run for a submission."""
     submission = await db.get(Submission, submission_id)
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
 
     most_recent_run = await db.execute(
         select(Run)
@@ -192,15 +195,20 @@ async def get_submission(
         id=submission.id,
         duration=submission.duration,
         status=most_recent_run.status,
-        highlights=[
-            HighlightResponse(
-                id=highlight.id,
-                start_time=highlight.start_time,
-                end_time=highlight.end_time,
-                title=highlight.title,
-                description=highlight.description,
-                text=highlight.text,
-            )
-            for highlight in most_recent_run.highlights
-        ] if most_recent_run else [],
+        progress=most_recent_run.progress if most_recent_run else 0.0,
+        highlights=(
+            [
+                HighlightResponse(
+                    id=highlight.id,
+                    start_time=highlight.start_time,
+                    end_time=highlight.end_time,
+                    title=highlight.title,
+                    description=highlight.description,
+                    text=highlight.text,
+                )
+                for highlight in most_recent_run.highlights
+            ]
+            if most_recent_run
+            else []
+        ),
     )

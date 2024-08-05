@@ -13,8 +13,9 @@ class Config(BaseSettings):
     S3_SECRET_ACCESS_KEY: str = "minio123"
     S3_UPLOAD_BUCKET: str = "uploads"
 
+    REDIS_HOST: str = Field(default="localhost")
+
     POSTGRES_DSN: PostgresDsn = Field(
-        alias="OCTOPOD_POSTGRES_DSN",
         default="postgres://postgres:postgres@localhost:5432/octopod",
     )
 

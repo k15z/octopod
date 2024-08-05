@@ -1,6 +1,8 @@
 # octopod
 Octopod automatically extracts highlights from podcast-like audio files.
 
+![assets/octopod.png](assets/octopod.png)
+
 ## usage
 The service can be launched using Docker Compose. The following command will build the Docker image and start the service on port 8000. Note that you need to provide an OpenAI API key as an environment variable.
 

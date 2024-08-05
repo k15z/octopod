@@ -1,13 +1,12 @@
-# Components
+# octopod
+Octopod automatically extracts highlights from podcast-like audio files.
 
- - Server
-    - Upload files, trigger jobs, serve response when ready.
- - Worker
-    - Update status in postgres.
-    - Powered by https://python-rq.org/
- - Minio
- - Redis
- - Postgres
+## usage
 
-POST /api/v1/submit # submit an audio file, get an ID back
-GET /api/v1/<id> # get the status of a job + results if ready?
+```bash
+$ curl -s https://octopod.kevz.app/api/v1/submit -F "file=@prototype/content/browser.mp3"
+{"id":"YOUR_SUBMISSION_ID"}
+
+curl -s https://octopod.kevz.app/api/v1/submission/{YOUR_SUBMISSION_ID}
+{"highlights":[...]}
+```

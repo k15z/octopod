@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 from octopod.worker import handle
 from octopod.config import config
-from octopod.database import AsyncSession, get_db, Submission, Run
+from octopod.database import AsyncSession, get_db, Submission, Run, Highlight
 
 
 app = FastAPI(
@@ -67,6 +67,10 @@ class SubmissionWithHighlightsResponse(SubmissionResponse):
 
 class ListSubmissionResponse(BaseModel):
     submissions: List[SubmissionResponse]
+
+
+class ListHighlightResponse(BaseModel):
+    highlights: List[HighlightResponse]
 
 
 @app.post("/api/v1/submit")
@@ -216,17 +220,22 @@ async def get_submission(
         status=most_recent_run.status,
         progress=most_recent_run.progress if most_recent_run else 0.0,
         highlights=(
-            list(sorted([
-                HighlightResponse(
-                    id=highlight.id,
-                    start_time=highlight.start_time,
-                    end_time=highlight.end_time,
-                    title=highlight.title,
-                    description=highlight.description,
-                    text=highlight.text,
+            list(
+                sorted(
+                    [
+                        HighlightResponse(
+                            id=highlight.id,
+                            start_time=highlight.start_time,
+                            end_time=highlight.end_time,
+                            title=highlight.title,
+                            description=highlight.description,
+                            text=highlight.text,
+                        )
+                        for highlight in most_recent_run.highlights
+                    ],
+                    key=lambda x: x.start_time,
                 )
-                for highlight in most_recent_run.highlights
-            ], key=lambda x: x.start_time))
+            )
             if most_recent_run
             else []
         ),
@@ -234,9 +243,7 @@ async def get_submission(
 
 
 @app.get("/api/v1/highlight/{highlight_id}")
-def get_highlight(
-    highlight_id: UUID
-):
+def get_highlight(highlight_id: UUID):
     """Return the MP3 from S3."""
     key = f"{str(highlight_id)}.mp3"
     s3 = boto3.client(
@@ -250,3 +257,25 @@ def get_highlight(
     except Exception:
         raise HTTPException(status_code=404, detail="Highlight not found")
     return FileResponse("/tmp/tmp.mp3")
+
+
+@app.get("/api/v1/highlight/")
+async def list_highlight(
+    db: AsyncSession = Depends(get_db),
+) -> ListHighlightResponse:
+    """List all highlights."""
+    highlights = await db.execute(select(Highlight))
+    highlights = highlights.scalars().all()
+    return ListHighlightResponse(
+        highlights=[
+            HighlightResponse(
+                id=highlight.id,
+                start_time=highlight.start_time,
+                end_time=highlight.end_time,
+                title=highlight.title,
+                description=highlight.description,
+                text=highlight.text,
+            )
+            for highlight in highlights
+        ]
+    )

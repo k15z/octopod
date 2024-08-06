@@ -2,6 +2,7 @@ import tempfile
 import shutil
 import hashlib
 from typing import List
+from datetime import datetime
 from uuid import UUID
 
 import boto3
@@ -54,6 +55,7 @@ class HighlightResponse(BaseModel):
 
 class SubmissionResponse(BaseModel):
     id: UUID
+    created_at: datetime
     duration: float
     status: str
     progress: float
@@ -127,6 +129,7 @@ async def submit(
     queue.enqueue(handle, submission.id, job_timeout=600)
     return SubmissionResponse(
         id=submission.id,
+        created_at=submission.created_at,
         duration=submission.duration,
         status="IN_QUEUE",
         progress=0.0,
@@ -153,6 +156,7 @@ async def list_submissions(
          
     SELECT
         submission.id,
+        submission.created_at,
         submission.duration,
         run.status,
         run.progress
@@ -163,6 +167,8 @@ async def list_submissions(
     LEFT JOIN
         most_recent_run ON submission.id = most_recent_run.submission_id
     WHERE run.created_at = most_recent_run.created_at OR run.created_at IS NULL
+    ORDER BY
+        submission.created_at DESC
     """
     )
 
@@ -173,11 +179,12 @@ async def list_submissions(
         submissions=[
             SubmissionResponse(
                 id=id,
+                created_at=created_at,
                 duration=duration,
                 status=status or "IN_QUEUE",
                 progress=progress or 0.0,
             )
-            for id, duration, status, progress in rows
+            for id, created_at, duration, status, progress in rows
         ]
     )
 
@@ -204,11 +211,12 @@ async def get_submission(
 
     return SubmissionWithHighlightsResponse(
         id=submission.id,
+        created_at=submission.created_at,
         duration=submission.duration,
         status=most_recent_run.status,
         progress=most_recent_run.progress if most_recent_run else 0.0,
         highlights=(
-            [
+            list(sorted([
                 HighlightResponse(
                     id=highlight.id,
                     start_time=highlight.start_time,
@@ -218,7 +226,7 @@ async def get_submission(
                     text=highlight.text,
                 )
                 for highlight in most_recent_run.highlights
-            ]
+            ], key=lambda x: x.start_time))
             if most_recent_run
             else []
         ),

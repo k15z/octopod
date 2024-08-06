@@ -2810,6 +2810,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"luxon@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "luxon@npm:3.5.0"
+  checksum: f290fe5788c8e51e748744f05092160d4be12150dca70f9fadc0d233e53d60ce86acd82e7d909a114730a136a77e56f0d3ebac6141bbb82fd310969a4704825b
+  languageName: node
+  linkType: hard
+
 "magic-string-ast@npm:^0.6.2":
   version: 0.6.2
   resolution: "magic-string-ast@npm:0.6.2"
@@ -3164,6 +3171,7 @@ __metadata:
     eslint-plugin-node: ^11.1.0
     eslint-plugin-promise: ^6.4.0
     eslint-plugin-vue: ^9.27.0
+    luxon: ^3.5.0
     roboto-fontface: "*"
     sass: 1.77.6
     typescript: ^5.4.2

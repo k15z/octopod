@@ -19,7 +19,7 @@
       <br />
       <ul class="pl-6" style="color:white;">
         <li v-for="submission in submissions" :key="submission.id">
-          <router-link :to="'/submission/' + submission.id">{{ submission.id }}</router-link>
+          {{toRelativeTime(submission.created_at)}} - <router-link :to="'/submission/' + submission.id">{{ submission.id }}</router-link>
         </li>
       </ul>
     </v-responsive>
@@ -28,9 +28,14 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
+import { DateTime } from "luxon";
 import { DefaultService, SubmissionResponse } from '@/api';
 
 const submissions = ref<SubmissionResponse[]>(null);
+
+function toRelativeTime(time: string) {
+  return DateTime.fromISO(time).toRelative();
+}
 
 DefaultService.listSubmissions().then((response) => {
   submissions.value = response.submissions;

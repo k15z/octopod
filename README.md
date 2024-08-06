@@ -13,7 +13,7 @@ OPENAI_API_KEY={OPENAI_API_KEY} docker compose up
 You can submit a file to the API by sending a POST request to the `/api/v1/submit` endpoint. The file should be sent as a form-data field named `file`. The API will respond with a JSON object containing the submission ID.
 
 ```bash
-$ curl -s http://localhost:8000/api/v1/submit -F "file=@examples/big_ideas.mp3"
+$ curl -s http://localhost:18888/api/v1/submit -F "file=@examples/big_ideas.mp3"
 {
     "id":"YOUR_SUBMISSION_ID",
     "status":"IN_QUEUE"
@@ -23,7 +23,7 @@ $ curl -s http://localhost:8000/api/v1/submit -F "file=@examples/big_ideas.mp3"
 To check the status of the submission, send a GET request to the `/api/v1/submission/{YOUR_SUBMISSION_ID}` endpoint. The API will respond with a JSON object containing the highlights extracted from the audio file.
 
 ```bash
-curl -s http://localhost:8000/api/v1/submission/{YOUR_SUBMISSION_ID}
+curl -s http://localhost:18888/api/v1/submission/{YOUR_SUBMISSION_ID}
 {
     "id": "16c33562-8042-4a1b-a2db-16979580e8d0",
     "duration": 1847.9136507936507,
@@ -44,4 +44,4 @@ curl -s http://localhost:8000/api/v1/submission/{YOUR_SUBMISSION_ID}
 
 The status field will transition from `IN_QUEUE` to `TRANSCRIBE` to `ANALYZE` to `COMPLETE` as the service processes the submission; the progress field reflects the progress of the current stage. Finally, for each highlight in the response, the corresponding audio file can be fetched from the `/api/v1/highlight/{HIGHLIGHT_ID}` endpoint.
 
-A minimal web interface is available at [http://localhost:8080/](http://localhost:8080/) to view recent submissions and highlights.
+A minimal web interface is available at [http://localhost:18888/](http://localhost:18888/) to view recent submissions and highlights.

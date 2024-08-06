@@ -4,6 +4,7 @@
 /* eslint-disable */
 export type SubmissionResponse = {
     id: string;
+    created_at: string;
     duration: number;
     status: string;
     progress: number;

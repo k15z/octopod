@@ -42,6 +42,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-node", "virtual:e7dd7502bc4ca2c9a661eb9a5a7858dca29c16ea45f6ee054469df7bbda8a9372085e2f7cb630698ed4a5a06c4140d4ce5cd1dfef2ee31c0cb1a830a9034cf1e#npm:11.1.0"],\
             ["eslint-plugin-promise", "virtual:e7dd7502bc4ca2c9a661eb9a5a7858dca29c16ea45f6ee054469df7bbda8a9372085e2f7cb630698ed4a5a06c4140d4ce5cd1dfef2ee31c0cb1a830a9034cf1e#npm:6.6.0"],\
             ["eslint-plugin-vue", "virtual:e7dd7502bc4ca2c9a661eb9a5a7858dca29c16ea45f6ee054469df7bbda8a9372085e2f7cb630698ed4a5a06c4140d4ce5cd1dfef2ee31c0cb1a830a9034cf1e#npm:9.27.0"],\
+            ["luxon", "npm:3.5.0"],\
             ["roboto-fontface", "npm:0.10.0"],\
             ["sass", "npm:1.77.6"],\
             ["typescript", "patch:typescript@npm%3A5.5.4#~builtin<compat/typescript>::version=5.5.4&hash=5da071"],\
@@ -3524,6 +3525,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["luxon", [\
+        ["npm:3.5.0", {\
+          "packageLocation": "./.yarn/cache/luxon-npm-3.5.0-92bb977f7f-f290fe5788.zip/node_modules/luxon/",\
+          "packageDependencies": [\
+            ["luxon", "npm:3.5.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["magic-string", [\
         ["npm:0.30.11", {\
           "packageLocation": "./.yarn/cache/magic-string-npm-0.30.11-4e76dc2f30-e041649453.zip/node_modules/magic-string/",\
@@ -3909,6 +3919,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-node", "virtual:e7dd7502bc4ca2c9a661eb9a5a7858dca29c16ea45f6ee054469df7bbda8a9372085e2f7cb630698ed4a5a06c4140d4ce5cd1dfef2ee31c0cb1a830a9034cf1e#npm:11.1.0"],\
             ["eslint-plugin-promise", "virtual:e7dd7502bc4ca2c9a661eb9a5a7858dca29c16ea45f6ee054469df7bbda8a9372085e2f7cb630698ed4a5a06c4140d4ce5cd1dfef2ee31c0cb1a830a9034cf1e#npm:6.6.0"],\
             ["eslint-plugin-vue", "virtual:e7dd7502bc4ca2c9a661eb9a5a7858dca29c16ea45f6ee054469df7bbda8a9372085e2f7cb630698ed4a5a06c4140d4ce5cd1dfef2ee31c0cb1a830a9034cf1e#npm:9.27.0"],\
+            ["luxon", "npm:3.5.0"],\
             ["roboto-fontface", "npm:0.10.0"],\
             ["sass", "npm:1.77.6"],\
             ["typescript", "patch:typescript@npm%3A5.5.4#~builtin<compat/typescript>::version=5.5.4&hash=5da071"],\

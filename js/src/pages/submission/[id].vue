@@ -32,6 +32,12 @@
                     <thead>
                         <tr>
                             <th class="text-right">
+                                Start
+                            </th>
+                            <th class="text-right">
+                                End
+                            </th>
+                            <th class="text-right">
                                 Duration
                             </th>
                             <th class="text-left">
@@ -45,6 +51,12 @@
                     <tbody>
                         <template v-for="highlight in submission?.highlights" :key="highlight.id">
                             <tr>
+                                <td class="text-right">
+                                    {{ formatSecondsToMMSS(highlight.start_time) }}
+                                </td>
+                                <td class="text-right">
+                                    {{ formatSecondsToMMSS(highlight.end_time) }}
+                                </td>
                                 <td class="text-right">
                                     {{ formatSecondsToMMSS(highlight.end_time - highlight.start_time) }}
                                 </td>

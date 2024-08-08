@@ -31,7 +31,7 @@ import { ref } from 'vue';
 import { DateTime } from "luxon";
 import { DefaultService, SubmissionResponse } from '@/api';
 
-const submissions = ref<SubmissionResponse[]>(null);
+const submissions = ref<SubmissionResponse[]>([]);
 
 function toRelativeTime(time: string) {
   return DateTime.fromISO(time).toRelative();

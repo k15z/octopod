@@ -20,9 +20,9 @@
                         <p>
                             <b>Status:</b> {{ submission?.status }}
                             <br />
-                            <b>Progress:</b> {{ (100.0 * submission?.progress).toFixed(2) }}%
+                            <b>Progress:</b> {{ (100.0 * submission?.progress!).toFixed(2) }}%
                             <br />
-                            <b>Duration:</b> {{ formatSecondsToMMSS(submission?.duration) }}
+                            <b>Duration:</b> {{ formatSecondsToMMSS(submission?.duration!) }}
                         </p>
                     </div>
                 </div>
@@ -83,12 +83,12 @@ import { OpenAPI, DefaultService, SubmissionWithHighlightsResponse } from '@/api
 
 const route = useRoute();
 const basePath = OpenAPI.BASE;
-const submissionId = route.params.id;
-const submission = ref<SubmissionWithHighlightsResponse>(null);
+const submissionId = route.params.id as string;
+const submission = ref<SubmissionWithHighlightsResponse | null>(null);
 
 function formatSecondsToMMSS(seconds: number) {
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = parseInt(seconds % 60);
+    const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 

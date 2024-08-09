@@ -1,10 +1,13 @@
-FROM node:21-alpine3.19
+FROM node:22-alpine3.19
+
+ENV NODE_ENV=production
+ENV YARN_VERSION=4.4.0
 
 WORKDIR /app
 
-COPY yarn.lock package.json ./
+COPY package.json ./
 
-RUN yarn install
+RUN corepack enable && corepack prepare yarn@$YARN_VERSION --activate && yarn --version && yarn install
 
 COPY . .
 

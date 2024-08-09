@@ -1,15 +1,16 @@
 import tempfile
 import shutil
 import hashlib
-from typing import List
+from typing import Annotated, List, Optional, Tuple
 from datetime import datetime
 from uuid import UUID
+from random import shuffle
 
 import boto3
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
-from fastapi import FastAPI, Depends, File, HTTPException, UploadFile
+from fastapi import FastAPI, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import select, text
 from redis import Redis
 from rq import Queue
@@ -44,6 +45,12 @@ def get_md5_hash(file_path):
     return md5.hexdigest()
 
 
+class HighlightSourceResponse(BaseModel):
+    id: UUID
+    title: str
+    description: str
+
+
 class HighlightResponse(BaseModel):
     id: UUID
     start_time: float
@@ -52,10 +59,14 @@ class HighlightResponse(BaseModel):
     description: str
     text: str
 
+    source: Optional[HighlightSourceResponse] = None
+
 
 class SubmissionResponse(BaseModel):
     id: UUID
     created_at: datetime
+    title: str
+    description: str
     duration: float
     status: str
     progress: float
@@ -73,8 +84,14 @@ class ListHighlightResponse(BaseModel):
     highlights: List[HighlightResponse]
 
 
+class MakePlaylistResponse(BaseModel):
+    playlist: List[HighlightResponse]
+
+
 @app.post("/api/v1/submit")
 async def submit(
+    title: Annotated[str, Form()],
+    description: Annotated[str, Form()],
     file: UploadFile = File(),
     db: AsyncSession = Depends(get_db),
 ) -> SubmissionResponse:
@@ -82,7 +99,10 @@ async def submit(
 
     Example:
     ```
-    curl -s http://localhost:8000/api/v1/submit -F "file=@examples/pharma.mp3"
+    curl -s http://localhost:8000/api/v1/submit \
+        -F "file=@examples/big_ideas.mp3" \
+        -F "title=Big ideas" \
+        -F "description=Big ideas is a podcast about..."
     ```
     """
     # Write to a temporary file
@@ -108,8 +128,8 @@ async def submit(
     submission = Submission(
         audio_uri=destination,
         duration=sound.duration_seconds,
-        title="",
-        description="",
+        title=title,
+        description=description,
     )
     db.add(submission)
     await db.commit()
@@ -134,6 +154,8 @@ async def submit(
     return SubmissionResponse(
         id=submission.id,
         created_at=submission.created_at,
+        title=submission.title,
+        description=submission.description,
         duration=submission.duration,
         status="IN_QUEUE",
         progress=0.0,
@@ -161,6 +183,8 @@ async def list_submissions(
     SELECT
         submission.id,
         submission.created_at,
+        submission.title,
+        submission.description,
         submission.duration,
         run.status,
         run.progress
@@ -184,11 +208,13 @@ async def list_submissions(
             SubmissionResponse(
                 id=id,
                 created_at=created_at,
+                title=title,
+                description=description,
                 duration=duration,
                 status=status or "IN_QUEUE",
                 progress=progress or 0.0,
             )
-            for id, created_at, duration, status, progress in rows
+            for id, created_at, title, description, duration, status, progress in rows
         ]
     )
 
@@ -216,6 +242,8 @@ async def get_submission(
     return SubmissionWithHighlightsResponse(
         id=submission.id,
         created_at=submission.created_at,
+        title=submission.title,
+        description=submission.description,
         duration=submission.duration,
         status=most_recent_run.status,
         progress=most_recent_run.progress if most_recent_run else 0.0,
@@ -230,6 +258,7 @@ async def get_submission(
                             title=highlight.title,
                             description=highlight.description,
                             text=highlight.text,
+                            source=None,
                         )
                         for highlight in most_recent_run.highlights
                     ],
@@ -266,6 +295,10 @@ async def list_highlight(
     """List all highlights."""
     highlights = await db.execute(select(Highlight))
     highlights = highlights.scalars().all()
+    for highlight in highlights:
+        await db.refresh(highlight, ["run"])
+        await db.refresh(highlight.run, ["submission"])
+
     return ListHighlightResponse(
         highlights=[
             HighlightResponse(
@@ -275,7 +308,84 @@ async def list_highlight(
                 title=highlight.title,
                 description=highlight.description,
                 text=highlight.text,
+                source=HighlightSourceResponse(
+                    id=highlight.run.submission.id,
+                    title=highlight.run.submission.title,
+                    description=highlight.run.submission.description,
+                ),
             )
             for highlight in highlights
         ]
     )
+
+
+@app.get("/api/v1/playlist/")
+async def make_playlist(
+    length: int,
+    db: AsyncSession = Depends(get_db),
+) -> ListHighlightResponse:
+    """Make a playlist of the target length."""
+    highlights = await db.execute(select(Highlight))
+    highlights = highlights.scalars().all()
+    for highlight in highlights:
+        await db.refresh(highlight, ["run"])
+        await db.refresh(highlight.run, ["submission"])
+
+    # For now, we'll just shuffle them and pop them until we reach the target length. But
+    # eventually this should be ranked by user preferences.
+    highlights = [
+        HighlightResponse(
+            id=highlight.id,
+            start_time=highlight.start_time,
+            end_time=highlight.end_time,
+            title=highlight.title,
+            description=highlight.description,
+            text=highlight.text,
+            source=HighlightSourceResponse(
+                id=highlight.run.submission.id,
+                title=highlight.run.submission.title,
+                description=highlight.run.submission.description,
+            ),
+        )
+        for highlight in highlights
+    ]
+    shuffle(highlights)
+
+    current = 0
+    playlist = []
+    source_to_windows = {}
+
+    def _overlap(windows: List[Tuple[int, int]], candidate: Tuple[int, int]):
+        """
+        Example:
+            windows = [(1,5), (10,15)]
+            candidate = (4,8)
+            overlap = 1 # 4-5 is the only overlap
+        """
+        overlap = 0
+        c_low, c_up = candidate
+        for w_low, w_up in windows:
+            if w_low >= c_up or w_up <= c_low:
+                # 0 overlap, no worries
+                continue
+            overlap += min(w_up, c_up) - max(w_low, c_low)
+        return overlap / (c_up - c_low)
+
+    for _ in range(100):
+        candidate = highlights.pop()
+        if (
+            _overlap(
+                source_to_windows.get(candidate.source_id, []),
+                (candidate.start_time, candidate.end_time),
+            )
+            > 0.1
+        ):
+            continue  # Reject candidates who overlap signifiacntly with other chosen highlights from the same source.
+        if current + candidate.end_time - candidate.start_time <= length:
+            playlist.append(candidate)
+            current += candidate.end_time - candidate.start_time
+            source_to_windows.setdefault(candidate.source_id, []).append(
+                (candidate.start_time, candidate.end_time)
+            )
+
+    return MakePlaylistResponse(playlist=playlist)

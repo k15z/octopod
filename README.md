@@ -13,7 +13,10 @@ OPENAI_API_KEY={OPENAI_API_KEY} docker compose up
 You can submit a file to the API by sending a POST request to the `/api/v1/submit` endpoint. The file should be sent as a form-data field named `file`. The API will respond with a JSON object containing the submission ID.
 
 ```bash
-$ curl -s http://localhost:18888/api/v1/submit -F "file=@examples/big_ideas.mp3"
+$ curl -s http://70.228.65.239:18888/api/v1/submit \
+    -F "file=@examples/big_ideas.mp3" \
+    -F "title=Big ideas" \
+    -F "description=Big ideas is a podcast about..."
 {
     "id":"YOUR_SUBMISSION_ID",
     "status":"IN_QUEUE"

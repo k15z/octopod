@@ -25,6 +25,8 @@ app = FastAPI(
     title="Octopod",
     description="Octopod is an API for extracting highlights from podcast-like audio files.",
     generate_unique_id_function=lambda route: route.endpoint.__name__,
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
 )
 app.add_middleware(
     CORSMiddleware,
@@ -85,6 +87,7 @@ class ListHighlightResponse(BaseModel):
 
 
 class MakePlaylistResponse(BaseModel):
+    length: int
     playlist: List[HighlightResponse]
 
 
@@ -323,7 +326,7 @@ async def list_highlight(
 async def make_playlist(
     length: int,
     db: AsyncSession = Depends(get_db),
-) -> ListHighlightResponse:
+) -> MakePlaylistResponse:
     """Make a playlist of the target length."""
     highlights = await db.execute(select(Highlight))
     highlights = highlights.scalars().all()
@@ -372,20 +375,24 @@ async def make_playlist(
         return overlap / (c_up - c_low)
 
     for _ in range(100):
+        print(f"Current length: {current}")
+        if not highlights:
+            break
         candidate = highlights.pop()
         if (
             _overlap(
-                source_to_windows.get(candidate.source_id, []),
+                source_to_windows.get(candidate.source.id, []),
                 (candidate.start_time, candidate.end_time),
             )
             > 0.1
         ):
+            print("Rejected due to overlap")
             continue  # Reject candidates who overlap signifiacntly with other chosen highlights from the same source.
         if current + candidate.end_time - candidate.start_time <= length:
             playlist.append(candidate)
             current += candidate.end_time - candidate.start_time
-            source_to_windows.setdefault(candidate.source_id, []).append(
+            source_to_windows.setdefault(candidate.source.id, []).append(
                 (candidate.start_time, candidate.end_time)
             )
 
-    return MakePlaylistResponse(playlist=playlist)
+    return MakePlaylistResponse(length=int(current), playlist=playlist)

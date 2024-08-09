@@ -5,13 +5,9 @@ ENV YARN_VERSION=4.4.0
 
 WORKDIR /app
 
-COPY package.json ./
-
-RUN corepack enable && corepack prepare yarn@$YARN_VERSION --activate && yarn --version && yarn install
-
 COPY . .
-
 EXPOSE 3000
-RUN yarn build
+
+RUN corepack enable && corepack prepare yarn@$YARN_VERSION --activate && yarn install && yarn build
 
 CMD ["yarn", "preview", "--host", "0.0.0.0", "--port", "3000"]

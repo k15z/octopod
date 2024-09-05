@@ -14,6 +14,8 @@ class Config(BaseSettings):
     S3_UPLOAD_BUCKET: str = "uploads"
     S3_HIGHLIGHT_BUCKET: str = "highlights"
 
+    JWT_SECRET_KEY: str = ""
+
     REDIS_HOST: str = Field(default="localhost")
 
     POSTGRES_DSN: PostgresDsn = Field(

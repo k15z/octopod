@@ -3,16 +3,14 @@ from pydantic import (
     PostgresDsn,
     field_validator,
 )
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Config(BaseSettings):
 
-    S3_ENDPOINT_URL: str = "http://localhost:9000"
-    S3_ACCESS_KEY_ID: str = "minio"
-    S3_SECRET_ACCESS_KEY: str = "minio123"
-    S3_UPLOAD_BUCKET: str = "uploads"
-    S3_HIGHLIGHT_BUCKET: str = "highlights"
+    AWS_ACCESS_KEY_ID: str = "minio"
+    AWS_SECRET_ACCESS_KEY: str = "minio123"
+    AWS_S3_BUCKET: str = "uploads"
 
     JWT_SECRET_KEY: str = ""
 
@@ -27,6 +25,8 @@ class Config(BaseSettings):
     def convert_to_asyncpg(cls, v: PostgresDsn) -> PostgresDsn:
         dsn = v.unicode_string().replace("postgres://", "postgresql+asyncpg://")
         return PostgresDsn(dsn)
+
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 config = Config()

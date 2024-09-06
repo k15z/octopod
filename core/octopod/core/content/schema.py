@@ -59,11 +59,24 @@ class CreatePodcastRequest(BaseModel):
     published_at: Optional[datetime] = Field(
         description="Date and time of publication."
     )
-    duration: float = Field(description="Duration in seconds.")
     cover_url: Optional[str] = Field(description="URL to the podcast cover image.")
     audio_url: str = Field(description="Audio file with the full podcast.")
+
+
+class UpdatePodcastRequest(BaseModel):
+    title: Optional[str] = Field(description="Title of the podcast.")
+    description: Optional[str] = Field(description="Description of the podcast.")
+    published_at: Optional[datetime] = Field(
+        description="Date and time of publication."
+    )
+    cover_url: Optional[str] = Field(description="URL to the podcast cover image.")
 
 
 class UpdatePodclipRequest(BaseModel):
     title: str = Field(description="Title of the podclip.")
     description: str = Field(description="Description of the podclip.")
+
+
+class PresignedUrlResponse(BaseModel):
+    file_url: str = Field(description="URL to access the file after uploading.")
+    presigned_url: str = Field(description="Presigned URL to upload the file.")

@@ -1,20 +1,26 @@
-from typing import Optional
+from typing import Literal, Optional
 from uuid import UUID
 
+import boto3
+from botocore.config import Config as BotocoreConfig
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from octopod.core.auth import TokenData, decode_user_token, decode_creator_token
 from octopod.database import get_db
+from octopod.config import config
+from octopod.models import generate_uuid
 from octopod.core.content.schema import (
     Podcast,
     CreatePodcastRequest,
+    UpdatePodcastRequest,
     MakePlaylistResponse,
     ListPodcastsResponse,
     Podclip,
     ListPodclipsResponse,
     UpdatePodclipRequest,
+    PresignedUrlResponse,
 )
 from octopod.models import (
     Podcast as PodcastModel,
@@ -63,7 +69,6 @@ async def create_podcast(
         creator_id=token.id,
         title=request.title,
         description=request.description,
-        duration=request.duration,
         cover_url=request.cover_url,
         audio_url=request.audio_url,
         status=PodcastStatus.Created,
@@ -71,6 +76,7 @@ async def create_podcast(
     db.add(podcast)
     await db.commit()
     await db.refresh(podcast)
+    # TODO: Launch a worker to process this.
     return await get_podcast(podcast.id, db)
 
 
@@ -99,7 +105,7 @@ async def get_podcast(
 @router.put("/podcast/{podcast_id}")
 async def update_podcast(
     podcast_id: UUID,
-    request: CreatePodcastRequest,
+    request: UpdatePodcastRequest,
     token: TokenData = Depends(decode_creator_token),
     db: AsyncSession = Depends(get_db),
 ) -> Podcast:
@@ -110,11 +116,10 @@ async def update_podcast(
     if podcast.creator_id != token.id:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    podcast.title = request.title
-    podcast.description = request.description
-    podcast.duration = request.duration
-    podcast.cover_url = request.cover_url
-    podcast.audio_url = request.audio_url
+    for attr in request.model_fields_set:
+        if getattr(request, attr) is not None:
+            setattr(podcast, attr, getattr(request, attr))
+
     await db.commit()
     await db.refresh(podcast)
 
@@ -204,8 +209,10 @@ async def update_podclip(
     if podclip.podcast.creator_id != token.id:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    podclip.title = request.title
-    podclip.description = request.description
+    for attr in request.model_fields_set:
+        if getattr(request, attr) is not None:
+            setattr(podclip, attr, getattr(request, attr))
+
     await db.commit()
     await db.refresh(podclip)
 
@@ -317,4 +324,35 @@ async def playlist(
     return MakePlaylistResponse(
         duration=duration,
         results=results,
+    )
+
+
+@router.get("/presign_url")
+async def presign_url(
+    kind: Literal["audio", "image"],
+) -> PresignedUrlResponse:
+    """Generate a presigned URL for uploading a file to S3.
+
+    Warning: Very insecure, do not use in production.
+    """
+    bucket_name = config.AWS_S3_BUCKET
+    object_key = f"{generate_uuid()}.{'mp3' if kind == 'audio' else 'jpg'}"
+
+    session = boto3.Session(
+        aws_access_key_id=config.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY,
+        region_name="us-east-1",
+    )
+    s3_client = session.client("s3", config=BotocoreConfig(signature_version="s3v4"))
+    presigned_url = s3_client.generate_presigned_url(
+        "put_object",
+        Params={
+            "Bucket": bucket_name,
+            "Key": object_key,
+        },
+        ExpiresIn=3600,
+    )
+    return PresignedUrlResponse(
+        file_url=f"https://{bucket_name}.s3.amazonaws.com/{object_key}",
+        presigned_url=presigned_url,
     )

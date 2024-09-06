@@ -15,5 +15,5 @@ def extract_podclips(source: AudioSegment) -> List[Podclip]:
 if __name__ == "__main__":
     from pydub import AudioSegment
 
-    source = AudioSegment.from_file("../examples/big_ideas.mp3")
+    source = AudioSegment.from_file("../assets/big_ideas.mp3")
     print(extract_podclips(source))

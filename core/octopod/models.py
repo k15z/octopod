@@ -101,6 +101,7 @@ class Payment(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
     creator_id: Mapped[UUID] = mapped_column(ForeignKey("creator.id"))
     amount: Mapped[float] = mapped_column()
+    payment_hash: Mapped[str] = mapped_column()
 
     user: Mapped["User"] = relationship("User", backref="payments")
     creator: Mapped["Creator"] = relationship("Creator", backref="payments")
@@ -145,7 +146,6 @@ class SkipEvent(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
     podcast_id: Mapped[UUID] = mapped_column(ForeignKey("podcast.id"))
     podclip_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("podclip.id"))
-    payment_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("payment.id"))
 
     skip_time: Mapped[float] = mapped_column()
 

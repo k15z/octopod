@@ -2,12 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type HighlightResponse = {
+export type UserProfile = {
     id: string;
-    start_time: number;
-    end_time: number;
-    title: string;
-    description: string;
-    text: string;
+    email: string;
+    nwc_string: string;
 };
 

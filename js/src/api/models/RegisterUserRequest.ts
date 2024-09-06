@@ -2,7 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Body_submit = {
-    file: Blob;
+export type RegisterUserRequest = {
+    email: string;
+    nwc_string: string;
 };
 

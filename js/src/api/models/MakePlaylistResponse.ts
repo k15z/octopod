@@ -2,11 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type SubmissionResponse = {
-    id: string;
-    created_at: string;
+import type { Podclip } from './Podclip';
+export type MakePlaylistResponse = {
     duration: number;
-    status: string;
-    progress: number;
+    results: Array<Podclip>;
 };
 

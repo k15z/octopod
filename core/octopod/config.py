@@ -13,6 +13,7 @@ class Config(BaseSettings):
     AWS_S3_BUCKET: str = "uploads"
 
     JWT_SECRET_KEY: str = ""
+    OPENAI_API_KEY: str = ""
 
     REDIS_HOST: str = Field(default="localhost")
 

@@ -55,10 +55,10 @@ class Creator(Base):
 
 class PodcastStatus(str, Enum):
     Created = "created"  # Metadata was provided
-    Uploaded = "uploaded"  # Audio file was uploaded
     Processing = "processing"  # Exciting AI stuff is happening
     Ready = "ready"  # "Podclips" are ready for review
     Published = "published"  # Podcast is live
+    Error = "error"  # Something went wrong
 
 
 class Podcast(Base):
@@ -70,7 +70,7 @@ class Podcast(Base):
     description: Mapped[str] = mapped_column()
     duration: Mapped[float] = mapped_column()
     cover_url: Mapped[Optional[str]] = mapped_column()
-    audio_url: Mapped[Optional[str]] = mapped_column()
+    audio_url: Mapped[str] = mapped_column()
     published_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

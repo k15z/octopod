@@ -30,6 +30,8 @@ from octopod.models import (
     TipEvent,
     PlayEvent,
 )
+from octopod.queue import worker_queue
+from octopod.worker import tasks
 
 router = APIRouter(prefix="/content", tags=["content"])
 
@@ -69,6 +71,7 @@ async def create_podcast(
         creator_id=token.id,
         title=request.title,
         description=request.description,
+        duration=0.0,
         cover_url=request.cover_url,
         audio_url=request.audio_url,
         status=PodcastStatus.Created,
@@ -76,7 +79,7 @@ async def create_podcast(
     db.add(podcast)
     await db.commit()
     await db.refresh(podcast)
-    # TODO: Launch a worker to process this.
+    worker_queue.enqueue(tasks.handle_podcast, podcast.id)
     return await get_podcast(podcast.id, db)
 
 

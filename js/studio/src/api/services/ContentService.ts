@@ -17,18 +17,18 @@ import { request as __request } from '../core/request';
 export class ContentService {
     /**
      * List Podcasts
-     * @param query
+     * @param q
      * @returns ListPodcastsResponse Successful Response
      * @throws ApiError
      */
     public static listPodcasts(
-        query?: (string | null),
+        q: string = '',
     ): CancelablePromise<ListPodcastsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/content/podcast',
             query: {
-                'query': query,
+                'q': q,
             },
             errors: {
                 422: `Validation Error`,

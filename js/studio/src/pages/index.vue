@@ -1,30 +1,49 @@
 <template>
-  <v-container class="fill-height">
-    <v-responsive class="align-centerfill-height mx-auto" max-width="900">
-      <h1 class="text-h2">Octopod</h1>
-      <br />
-      <br />
-      <ul class="pl-6" style="color:white;">
-        <li v-for="podcast in podcasts" :key="podcast.id">
-          {{toRelativeTime(podcast.published_at!)}} - <router-link :to="'/podcast/' + podcast.id">{{ podcast.id }}</router-link>
-        </li>
-      </ul>
-    </v-responsive>
-  </v-container>
+    <v-layout class="fill-height">
+        <v-navigation-drawer theme="dark" permanent>
+            <template v-slot:prepend>
+                <v-list-item style="" to="/profile" lines="two" prepend-avatar="https://randomuser.me/api/portraits/men/42.jpg"
+                    subtitle="$john.smith@uma.me" title="John Smith"></v-list-item>
+            </template>
+
+            <v-divider></v-divider>
+
+            <v-list nav>
+                <v-list-item prepend-icon="mdi-view-dashboard" title="Dashboard" to="/dashboard"></v-list-item>
+                <v-list-item prepend-icon="mdi-podcast" title="Podcasts" to="/podcasts"></v-list-item>
+                <v-list-item prepend-icon="mdi-cash" title="Payments" to="/payments"></v-list-item>
+            </v-list>
+
+            <template v-slot:append>
+                <div class="pa-2">
+                    <v-btn variant="text" class="spotify-color" @click="logout" block>
+                        Logout
+                    </v-btn>
+                </div>
+            </template>
+        </v-navigation-drawer>
+        <v-main>
+            <div class="ml-4 mr-4 mt-2 mb-2">
+            <RouterView></RouterView>
+        </div>
+        </v-main>
+    </v-layout>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { DateTime } from "luxon";
-import { ContentService, Podcast } from '@/api';
+import storage from '@/storage';
+import { useRouter } from 'vue-router';
 
-const podcasts = ref<Podcast[]>([]);
+const router = useRouter();
 
-function toRelativeTime(time: string) {
-  return DateTime.fromISO(time).toRelative();
+function logout() {
+    router.push('/auth');
+    storage.value.access_token = '';
 }
-
-ContentService.listPodcasts().then((response) => {
-  podcasts.value = response.results;
-});
 </script>
+
+<style scoped>
+::v-deep(.v-list-item--active) {
+    background-color: #1DB954;
+}
+</style>

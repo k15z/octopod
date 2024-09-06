@@ -147,17 +147,19 @@ async def delete_podcast(
 
 @router.get("/podclips")
 async def list_podclips(
-    query: Optional[str] = None,
-    min_duration: Optional[int] = 0,
-    max_duration: Optional[int] = 36000,
+    q: str = "",
+    min_duration: int = 0,
+    max_duration: int = 360000,
+    podcast_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
 ) -> ListPodclipsResponse:
-    podclip = await db.execute(
-        select(PodclipModel).where(
-            PodclipModel.duration >= min_duration,
-            PodclipModel.duration <= max_duration,
-        )
+    query = select(PodclipModel).where(
+        PodclipModel.duration >= min_duration,
+        PodclipModel.duration <= max_duration,
     )
+    if podcast_id is not None:
+        query = query.where(PodclipModel.podcast_id == podcast_id)
+    podclip = await db.execute(query)
     results = []
     for content in podclip.scalars().all():
         results.append(

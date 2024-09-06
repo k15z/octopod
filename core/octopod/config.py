@@ -15,6 +15,10 @@ class Config(BaseSettings):
     JWT_SECRET_KEY: str = ""
     OPENAI_API_KEY: str = ""
 
+    # If running behind a reverse proxy, set this to the root path which is stripped so that
+    # FastAPI can correctly generate the OpenAPI schema.
+    PROXY_PASS_ROOT: str = ""
+
     REDIS_HOST: str = Field(default="localhost")
 
     POSTGRES_DSN: PostgresDsn = Field(

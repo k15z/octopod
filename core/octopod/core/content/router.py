@@ -29,6 +29,7 @@ from octopod.models import (
     SkipEvent,
     TipEvent,
     PlayEvent,
+    Payment,
 )
 from octopod.queue import worker_queue
 from octopod.worker import tasks
@@ -38,11 +39,19 @@ router = APIRouter(prefix="/content", tags=["content"])
 
 @router.get("/podcast")
 async def list_podcasts(
-    query: Optional[str] = None,
+    q: str = "",
     db: AsyncSession = Depends(get_db),
 ) -> ListPodcastsResponse:
+    query = select(PodcastModel)
+    if q:
+        query = query.where(
+            PodcastModel.title.ilike(f"%{q}%")
+            | PodcastModel.description.ilike(f"%{q}%")
+            | PodcastModel.creator.ilike(f"%{q}%")
+        )
+
     results = []
-    for content in (await db.execute(select(PodcastModel))).scalars().all():
+    for content in (await db.execute(query)).scalars().all():
         await db.refresh(content, ["creator"])
         results.append(
             Podcast(
@@ -157,11 +166,16 @@ async def list_podclips(
         PodclipModel.duration >= min_duration,
         PodclipModel.duration <= max_duration,
     )
+    if q:
+        query = query.where(
+            PodclipModel.title.ilike(f"%{q}%")
+            | PodclipModel.description.ilike(f"%{q}%")
+        )
     if podcast_id is not None:
         query = query.where(PodclipModel.podcast_id == podcast_id)
-    podclip = await db.execute(query)
+
     results = []
-    for content in podclip.scalars().all():
+    for content in (await db.execute(query)).scalars().all():
         results.append(
             Podclip(
                 id=content.id,
@@ -264,7 +278,7 @@ async def skip_podclip(
 @router.post("/podclip/{podclip_id}/report/tipped")
 async def tip_podclip(
     podclip_id: UUID,
-    amount: float,
+    amount: int,
     token: TokenData = Depends(decode_user_token),
     db: AsyncSession = Depends(get_db),
 ):
@@ -272,11 +286,26 @@ async def tip_podclip(
     podclip = result.scalar()
     if not podclip:
         raise HTTPException(status_code=404, detail="Podclip not found")
+
+    # Send the tip
+    await db.refresh(podclip, ["podcast"])
+    payment = Payment(
+        user_id=token.id,
+        creator_id=podclip.podcast.creator_id,
+        amount=amount,
+        # TODO: Actually send the payment.
+    )
+    db.add(payment)
+    await db.commit()
+    await db.refresh(payment)
+
+    # Log the tip event
     event = TipEvent(
         user_id=token.id,
         podcast_id=podclip.podcast_id,
         podclip_id=podclip_id,
         amount=amount,
+        payment_id=payment.id,
     )
     db.add(event)
     await db.commit()
@@ -292,10 +321,25 @@ async def play_podclip(
     podclip = result.scalar()
     if not podclip:
         raise HTTPException(status_code=404, detail="Podclip not found")
+
+    # Send the payment
+    await db.refresh(podclip, ["podcast"])
+    payment = Payment(
+        user_id=token.id,
+        creator_id=podclip.podcast.creator_id,
+        amount=int(podclip.duration),  # 1 sat per second
+        # TODO: Actually send the payment.
+    )
+    db.add(payment)
+    await db.commit()
+    await db.refresh(payment)
+
+    # Log the play event
     event = PlayEvent(
         user_id=token.id,
         podcast_id=podclip.podcast_id,
         podclip_id=podclip_id,
+        payment_id=payment.id,
     )
     db.add(event)
     await db.commit()
@@ -307,6 +351,7 @@ async def playlist(
     token: TokenData = Depends(decode_user_token),
     db: AsyncSession = Depends(get_db),
 ) -> MakePlaylistResponse:
+    # TODO: Personalize the playlist based on user's listening history.
     result = await db.execute(select(PodclipModel).limit(10))
     results = []
     duration = 0

@@ -19,9 +19,10 @@ uvicorn = "*"
 boto3 = "*"
 python-multipart = "*"
 pyjwt = "*"
-fastapi = {extras = ["standard"], version = "*"}
+fastapi = {extras = ["standard"] }
 python-dotenv = "*"
 requests = "*"
+secp256k1 = "*"
 
 [dev-packages]
 mypy = "*"

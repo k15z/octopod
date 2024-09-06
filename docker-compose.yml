@@ -1,6 +1,4 @@
 name: octopod
-volumes:
-  postgres_data:
 services:
 
   js:
@@ -13,13 +11,11 @@ services:
       context: ./core
       dockerfile: Dockerfile
     environment:
-      - POSTGRES_DSN=postgres://postgres:postgres@postgres:5432/octopod
       - REDIS_HOST=redis
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PROXY_PASS_ROOT=/api
+      - POSTGRES_DSN=${POSTGRES_DSN}
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
 
@@ -28,32 +24,13 @@ services:
       context: ./core
       dockerfile: Dockerfile
     environment:
-      - POSTGRES_DSN=postgres://postgres:postgres@postgres:5432/octopod
       - REDIS_HOST=redis
       - REDIS_URL=redis://redis:6379
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     entrypoint: ["rq", "worker", "--with-scheduler"]
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
-
-  postgres:
-    image: postgres:latest
-    environment:
-      - POSTGRES_DB=octopod
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - 5432:5432
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:latest

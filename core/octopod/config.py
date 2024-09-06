@@ -31,7 +31,7 @@ class Config(BaseSettings):
         dsn = v.unicode_string().replace("postgres://", "postgresql+asyncpg://")
         return PostgresDsn(dsn)
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=(".env", "../.env", "../../.env"))
 
 
 config = Config()

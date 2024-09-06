@@ -13,8 +13,9 @@ RUN pip install --upgrade pip wheel setuptools && \
     ~/.local/bin/pipenv install --system --deploy --ignore-pipfile --extra-pip-args=--ignore-installed && \
     rm -rf ~/.cache ~/.local
 
+COPY alembic /app/alembic
+COPY alembic.ini /app/
 COPY octopod /app/octopod
-COPY scripts /app/scripts
 COPY run.sh /app/
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1

@@ -23,6 +23,8 @@ fastapi = {extras = ["standard"] }
 python-dotenv = "*"
 requests = "*"
 secp256k1 = "*"
+alembic = "*"
+typing-extensions = "*"
 
 [dev-packages]
 mypy = "*"

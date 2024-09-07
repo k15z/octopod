@@ -1,10 +1,9 @@
 # Build
-FROM node:22-alpine3.19 as build
+FROM node:22-alpine3.19 AS build
 ENV NODE_ENV=production
-ENV YARN_VERSION=4.4.0
 WORKDIR /app
 COPY . .
-RUN corepack enable && corepack prepare yarn@$YARN_VERSION --activate && yarn install && yarn build --base=/studio/
+RUN npm install --dev && npm run build
 
 # Production stage
 FROM nginx:alpine

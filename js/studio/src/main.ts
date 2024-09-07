@@ -1,17 +1,24 @@
-/**
- * main.ts
- *
- * Bootstraps Vuetify and other plugins then mounts the App`
- */
+import {OpenAPI} from '@/api';
+import {registerPlugins} from '@/plugins'
+import storage from '@/storage';
 
-// Plugins
-import { registerPlugins } from '@/plugins'
+// Composables
+import {createApp, watch} from 'vue'
 
 // Components
 import App from './App.vue'
 
-// Composables
-import { createApp } from 'vue'
+if (!import.meta.env.PROD) {
+  OpenAPI.BASE = 'http://localhost:8000'
+} else {
+  OpenAPI.BASE = '/api'
+}
+
+// Keep the token in sync with the storage
+OpenAPI.TOKEN = storage.value.access_token
+watch(() => storage.value.access_token, () => {
+  OpenAPI.TOKEN = storage.value.access_token
+})
 
 const app = createApp(App)
 

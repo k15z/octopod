@@ -7,13 +7,14 @@ import {
   LinearProgress,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
 import { Podcast } from "../types";
 import { keyframes } from "@mui/system";
 
 interface PodcastCardProps {
   podcast: Podcast;
   isActive: boolean;
+  isPlaying: boolean;
+  onTogglePlay: () => void;
 }
 
 const getRandomGradient = () => {
@@ -39,8 +40,7 @@ const scrollAnimation = keyframes`
   50% { transform: translateX(calc(-100% + 300px)); }
 `;
 
-const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, isActive }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, isActive, isPlaying, onTogglePlay }) => {
   const [progress, setProgress] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -48,14 +48,12 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, isActive }) => {
   const [gradient] = useState(getRandomGradient());
 
   useEffect(() => {
-    if (isActive) {
-      setIsPlaying(true);
+    if (isActive && isPlaying) {
       audioRef.current?.play();
     } else {
-      setIsPlaying(false);
       audioRef.current?.pause();
     }
-  }, [isActive]);
+  }, [isActive, isPlaying]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -82,20 +80,9 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, isActive }) => {
     }
   }, [podcast.title]);
 
-  const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
   return (
     <Box
-      onClick={togglePlay}
+      onClick={onTogglePlay}
       sx={{
         height: "100%",
         width: "100%",

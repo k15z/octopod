@@ -11,6 +11,7 @@ const VerticalSwipePlayer: React.FC = () => {
   const { token } = useAuth();
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const fetchPlaylist = useCallback(async () => {
     try {
@@ -48,7 +49,28 @@ const VerticalSwipePlayer: React.FC = () => {
 
   const handleChangeIndex = (index: number) => {
     setCurrentIndex(index);
+    setIsPlaying(true);
   };
+
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'ArrowUp' && currentIndex > 0) {
+      setCurrentIndex(prevIndex => prevIndex - 1);
+      setIsPlaying(true);
+    } else if (event.key === 'ArrowDown' && currentIndex < podcasts.length - 1) {
+      setCurrentIndex(prevIndex => prevIndex + 1);
+      setIsPlaying(true);
+    } else if (event.code === 'Space') {
+      event.preventDefault(); // Prevent scrolling
+      setIsPlaying(prevIsPlaying => !prevIsPlaying);
+    }
+  }, [currentIndex, podcasts.length]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <Box sx={{ height: '100vh', width: '100vw', overflow: 'hidden' }}>
@@ -66,6 +88,8 @@ const VerticalSwipePlayer: React.FC = () => {
             <PodcastCard
               podcast={podcast}
               isActive={index === currentIndex}
+              isPlaying={isPlaying && index === currentIndex}
+              onTogglePlay={() => setIsPlaying(!isPlaying)}
             />
           </Box>
         ))}

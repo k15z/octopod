@@ -88,7 +88,7 @@ async def create_podcast(
     db.add(podcast)
     await db.commit()
     await db.refresh(podcast)
-    worker_queue.enqueue(tasks.handle_podcast, podcast.id)
+    worker_queue.enqueue(tasks.handle_podcast, podcast.id, job_timeout=3600)
     return await get_podcast(podcast.id, db)
 
 

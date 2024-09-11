@@ -25,6 +25,7 @@ from octopod.core.content.schema import (
     PresignedUrlResponse,
 )
 from octopod.models import (
+    User,
     Podcast as PodcastModel,
     PodcastStatus,
     Podclip as PodclipModel,
@@ -35,6 +36,7 @@ from octopod.models import (
 )
 from octopod.queue import worker_queue
 from octopod.worker import tasks
+from octopod.nwc import send_to_uma  # type: ignore
 
 router = APIRouter(prefix="/content", tags=["content"])
 
@@ -292,10 +294,25 @@ async def tip_podclip(
     token: TokenData = Depends(decode_user_token),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(PodclipModel).where(PodclipModel.id == podclip_id))
+    result = await db.execute(
+        select(PodclipModel)
+        .options(selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator))
+        .where(PodclipModel.id == podclip_id)
+    )
     podclip = result.scalar()
     if not podclip:
         raise HTTPException(status_code=404, detail="Podclip not found")
+
+    try:
+        user = (await db.execute(select(User).where(User.id == token.id))).scalar()
+        assert user is not None
+        nwc_response = await send_to_uma(
+            user.nwc_string, podclip.podcast.creator.uma_address, amount
+        )
+    except Exception as e:
+        # For now, just log the error and pretend the payment was successful.
+        print(e)
+        nwc_response = "NOT_PAID"
 
     # Send the tip
     await db.refresh(podclip, ["podcast"])
@@ -303,7 +320,7 @@ async def tip_podclip(
         user_id=token.id,
         creator_id=podclip.podcast.creator_id,
         amount=amount,
-        payment_hash="NOT_PAID",  # TODO: Actually send the payment.
+        payment_hash=str(nwc_response),
     )
     db.add(payment)
     await db.commit()
@@ -327,18 +344,34 @@ async def play_podclip(
     token: TokenData = Depends(decode_user_token),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(PodclipModel).where(PodclipModel.id == podclip_id))
+    result = await db.execute(
+        select(PodclipModel)
+        .options(selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator))
+        .where(PodclipModel.id == podclip_id)
+    )
     podclip = result.scalar()
     if not podclip:
         raise HTTPException(status_code=404, detail="Podclip not found")
+
+    amount = int(podclip.duration)  # 1 sat per second
+    try:
+        user = (await db.execute(select(User).where(User.id == token.id))).scalar()
+        assert user is not None
+        nwc_response = await send_to_uma(
+            user.nwc_string, podclip.podcast.creator.uma_address, amount
+        )
+    except Exception as e:
+        # For now, just log the error and pretend the payment was successful.
+        print(e)
+        nwc_response = "NOT_PAID"
 
     # Send the payment
     await db.refresh(podclip, ["podcast"])
     payment = Payment(
         user_id=token.id,
         creator_id=podclip.podcast.creator_id,
-        amount=int(podclip.duration),  # 1 sat per second
-        payment_hash="NOT_PAID",  # TODO: Actually send the payment.
+        amount=amount,
+        payment_hash=str(nwc_response),
     )
     db.add(payment)
     await db.commit()

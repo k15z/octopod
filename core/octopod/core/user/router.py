@@ -111,7 +111,7 @@ async def user_statistics(
     if result is None:
         seconds_saved = 0
     else:
-        seconds_saved = int(result.scalar_one())
+        seconds_saved = int(result)
 
     return UserStatistics(
         weekly_spend=weekly_spend,

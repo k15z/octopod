@@ -5,10 +5,12 @@ from random import choice
 import boto3
 from botocore.config import Config as BotocoreConfig
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from octopod.core.auth import TokenData, decode_user_token, decode_creator_token
+from octopod.core.content.filter import ContentFilter
 from octopod.database import get_db
 from octopod.config import config
 from octopod.models import generate_uuid
@@ -372,18 +374,50 @@ async def playlist(
         .scalars()
         .all()
     )
+    cf = ContentFilter()
+    for play in recent_plays:
+        await db.refresh(play, ["podclip"])
+        cf.add(play.podclip)
     if recent_plays:
         # User has recent plays, get content-based recommendations.
-        # [TODO] Make this actually good.
-        play_event = choice(recent_plays)
-        await db.refresh(play_event, ["podclip"])
-        assert play_event.podclip is not None
+        query = """
+        WITH target_podclips AS (
+            SELECT
+                *
+            FROM podclip
+            WHERE podclip.id = ANY(:values)
+        ), cross_scores AS (
+            SELECT
+                podclip.id AS podclip_id, l1_distance(podclip.embedding, target_podclips.embedding) AS score
+            FROM podclip
+            CROSS JOIN target_podclips
+            WHERE podclip.id != target_podclips.id
+        ), podclip_ranking AS (
+            SELECT 
+                podclip_id,
+                MIN(cross_scores.score) AS score
+            FROM cross_scores
+            GROUP BY podclip_id
+        )
+        
+        SELECT podclip_id, score FROM podclip_ranking ORDER BY score ASC LIMIT 100
+        """
+        result = await db.execute(text(query), {"values": [x.podclip_id for x in recent_plays]})
+        result = result.fetchall()
+        if not result:
+            return MakePlaylistResponse(duration=0, results=[])
+        
+        select_ids = [podclip_id for podclip_id, _ in result]
+
         result = await db.execute(
             select(PodclipModel)
-            .order_by(PodclipModel.embedding.l2_distance(play_event.podclip.embedding))
-            .where(PodclipModel.id.not_in([play.podclip_id for play in recent_plays]))
-            .limit(10)
+            .options(selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator))
+            .where(PodclipModel.id.in_(select_ids))
         )
+        podclips = result.scalars().all() # Sort to match selected_podclip_ids
+        podclips = list(sorted(podclips, key=lambda x: select_ids.index(x.id)))
+        print(podclips[:10])
+
     else:
         # No recent plays, just get the most popular podcasts.
         count = (
@@ -393,12 +427,18 @@ async def playlist(
             .label("count")
         )
         result = await db.execute(
-            select(PodclipModel, count).order_by(count.desc()).limit(10)
+            select(PodclipModel, count)
+            .options(selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator))
+            .order_by(count.desc()).limit(20)
         )
+        podclips = result.scalars().all()
 
     results = []
     duration = 0
-    for podclip in result.scalars().all():
+    for podclip in podclips:
+        if not cf.okay(podclip):
+            continue
+        print(podclip.podcast)
         results.append(
             Podclip(
                 id=podclip.id,
@@ -408,9 +448,19 @@ async def playlist(
                 duration=podclip.duration,
                 start_time=podclip.start_time,
                 end_time=podclip.end_time,
-                podcast=await get_podcast(podclip.podcast_id, db),
+                podcast=Podcast(
+                    id=podclip.podcast.id,
+                    title=podclip.podcast.title,
+                    description=podclip.podcast.description,
+                    creator_name=podclip.podcast.creator.name,
+                    published_at=podclip.podcast.published_at,
+                    duration=podclip.podcast.duration,
+                    cover_url=podclip.podcast.cover_url,
+                    audio_url=podclip.podcast.audio_url,
+                ),
             )
         )
+        cf.add(podclip)
         duration += podclip.duration
         if duration >= seconds:
             break

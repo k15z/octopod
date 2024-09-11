@@ -28,7 +28,8 @@ def download_mp3(url: str) -> str:
 
         # Return the path of the temporary file
         return temp_file.name
-    
+
+
 def get_background_music() -> AudioSegment:
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(config.AWS_S3_BUCKET)
@@ -38,7 +39,9 @@ def get_background_music() -> AudioSegment:
 
     song = random.choice(songs)
 
-    return AudioSegment.from_file(download_mp3(f"https://{config.AWS_S3_BUCKET}.s3.amazonaws.com/{song}"))
+    return AudioSegment.from_file(
+        download_mp3(f"https://{config.AWS_S3_BUCKET}.s3.amazonaws.com/{song}")
+    )
 
 
 async def set_podcast_status(podcast_id: UUID, status: PodcastStatus) -> Podcast:
@@ -89,7 +92,9 @@ async def handle_podcast(podcast_id: UUID):
             intro_music = intro_music.fade_out(3000)
 
             intro = intro_text.overlay(intro_music)
-            sound = audio[int(podclip.start_time * 1000) : int(podclip.end_time * 1000)].fade_in(2000)
+            sound = audio[
+                int(podclip.start_time * 1000) : int(podclip.end_time * 1000)
+            ].fade_in(2000)
             sound = intro + sound
 
             with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:

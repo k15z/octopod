@@ -225,11 +225,16 @@ def segments_to_podclips(segments: List[Segment]) -> List[Podclip]:
         results = list(executor.map(_podclips, windows))
     return [podclip for result in results for podclip in result]
 
+
 async def podclip_intro(clip: Podclip, podcast_uuid: UUID) -> AudioSegment:
     """Creates an intro for a podclip"""
     print(f"Looking up podclip information for {clip.title}")
     async with SessionLocal() as session:
-        result = await session.execute(select(Creator.name).join(Podcast, Podcast.creator_id == Creator.id).where(Podcast.id == podcast_uuid))
+        result = await session.execute(
+            select(Creator.name)
+            .join(Podcast, Podcast.creator_id == Creator.id)
+            .where(Podcast.id == podcast_uuid)
+        )
         creator = result.scalar()
         if not creator:
             raise ValueError(f"Creator for podcast {podcast_uuid} not found")
@@ -248,4 +253,3 @@ async def podclip_intro(clip: Podclip, podcast_uuid: UUID) -> AudioSegment:
         response.stream_to_file(temp_file.name)
 
         return AudioSegment.from_file(temp_file.name)
-    

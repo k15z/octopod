@@ -9,7 +9,7 @@ import concurrent.futures
 
 import dirtyjson  # type: ignore
 from openai import OpenAI
-from pydub import AudioSegment
+from pydub import AudioSegment  # type: ignore
 from mako.template import Template  # type: ignore
 
 from octopod.config import config

@@ -1,6 +1,7 @@
 from uuid import UUID, uuid4
 import requests
 import tempfile
+import random
 
 import boto3
 from tqdm import tqdm
@@ -11,6 +12,7 @@ from octopod.config import config
 from octopod.database import SessionLocal
 from octopod.models import Podcast, PodcastStatus, Podclip
 from octopod.ai import extract_podclips
+from octopod.ai.podclip import podclip_intro
 
 
 def download_mp3(url: str) -> str:
@@ -26,6 +28,20 @@ def download_mp3(url: str) -> str:
 
         # Return the path of the temporary file
         return temp_file.name
+
+
+def get_background_music() -> AudioSegment:
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(config.AWS_S3_BUCKET)
+    objects = bucket.objects.filter(Prefix="background/")
+
+    songs = [object.key for object in objects if object.key.endswith(".mp3")]
+
+    song = random.choice(songs)
+
+    return AudioSegment.from_file(
+        download_mp3(f"https://{config.AWS_S3_BUCKET}.s3.amazonaws.com/{song}")
+    )
 
 
 async def set_podcast_status(podcast_id: UUID, status: PodcastStatus) -> Podcast:
@@ -64,7 +80,23 @@ async def handle_podcast(podcast_id: UUID):
     try:
         podclips = extract_podclips(audio)
         for podclip in podclips:
-            sound = audio[int(podclip.start_time * 1000) : int(podclip.end_time * 1000)]
+            async with SessionLocal() as session:
+                intro_text = await podclip_intro(podclip, podcast_id)
+            intro_text += AudioSegment.silent(duration=2000)
+            intro_length = len(intro_text)
+
+            intro_music = get_background_music()[:intro_length]
+
+            target_loudness = -32
+            intro_music = intro_music.apply_gain(target_loudness - intro_music.dBFS)
+            intro_music = intro_music.fade_out(3000)
+
+            intro = intro_text.overlay(intro_music)
+            sound = audio[
+                int(podclip.start_time * 1000) : int(podclip.end_time * 1000)
+            ].fade_in(2000)
+            sound = intro + sound
+
             with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
                 sound.export(temp_file.name, format="mp3")
 

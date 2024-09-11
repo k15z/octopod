@@ -1,15 +1,21 @@
 from typing import List, Optional
 from dataclasses import dataclass
+import tempfile
+
+from sqlalchemy import select
+from uuid import UUID
 
 import concurrent.futures
 
 import dirtyjson  # type: ignore
 from openai import OpenAI
+from pydub import AudioSegment  # type: ignore
 from mako.template import Template  # type: ignore
 
 from octopod.config import config
 from octopod.ai.transcribe import Segment
-
+from octopod.database import SessionLocal
+from octopod.models import Podcast, Creator
 
 MAX_WORKERS = 4
 
@@ -218,3 +224,32 @@ def segments_to_podclips(segments: List[Segment]) -> List[Podclip]:
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         results = list(executor.map(_podclips, windows))
     return [podclip for result in results for podclip in result]
+
+
+async def podclip_intro(clip: Podclip, podcast_uuid: UUID) -> AudioSegment:
+    """Creates an intro for a podclip"""
+    print(f"Looking up podclip information for {clip.title}")
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(Creator.name)
+            .join(Podcast, Podcast.creator_id == Creator.id)
+            .where(Podcast.id == podcast_uuid)
+        )
+        creator = result.scalar()
+        if not creator:
+            raise ValueError(f"Creator for podcast {podcast_uuid} not found")
+
+    print("Generating intro for podclip")
+    client = OpenAI(api_key=config.OPENAI_API_KEY)
+    intro = f"From {creator}, on {clip.title}"
+
+    response = client.audio.speech.create(
+        model="tts-1",
+        voice="nova",
+        input=intro,
+    )
+
+    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
+        response.stream_to_file(temp_file.name)
+
+        return AudioSegment.from_file(temp_file.name)

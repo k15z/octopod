@@ -19,7 +19,7 @@ interface PlayerProps {
   isPlaying: boolean;
   onTogglePlay: () => void;
   onEnded: () => void;
-  onNext: () => void;
+  onNext: (currentTime: number, duration: number) => void;
   onPrevious: () => void;
 }
 
@@ -188,7 +188,7 @@ const Player: React.FC<PlayerProps> = ({
               >
                 {isPlaying ? <PauseRounded /> : <PlayArrowRounded />}
               </IconButton>
-              <IconButton sx={{ color: "text.primary" }} onClick={onNext}>
+              <IconButton sx={{ color: "text.primary" }} onClick={() => onNext(currentTime, duration)}>
                 <SkipNextRounded />
               </IconButton>
             </Box>

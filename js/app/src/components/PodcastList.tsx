@@ -3,6 +3,7 @@ import { List, ListItem, ListItemText, Typography, IconButton, Box, Avatar } fro
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import { Podcast } from '../types';
+import { keyframes } from '@mui/system';
 
 interface PodcastListProps {
   podcasts: Podcast[];
@@ -11,6 +12,29 @@ interface PodcastListProps {
   onSelectPodcast: (podcast: Podcast) => void;
   onTogglePlay: () => void;
 }
+
+const waveAnimation = keyframes`
+  0% { height: 3px; }
+  50% { height: 10px; }
+  100% { height: 3px; }
+`;
+
+const WaveForm: React.FC = () => (
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px', width: 20, height: 16 }}>
+    {[0, 1, 2].map((i) => (
+      <Box
+        key={i}
+        sx={{
+          width: '2px',
+          height: '3px',
+          backgroundColor: 'primary.main',
+          animation: `${waveAnimation} 1.2s ease-in-out infinite`,
+          animationDelay: `${i * 0.2}s`,
+        }}
+      />
+    ))}
+  </Box>
+);
 
 const PodcastList: React.FC<PodcastListProps> = ({ 
   podcasts, 
@@ -22,7 +46,7 @@ const PodcastList: React.FC<PodcastListProps> = ({
   return (
     <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: 'background.default' }}>
       <Typography variant="h6" component="h2" sx={{ mb: 2, color: 'text.primary' }}>
-        Podcasts
+        Your custom 30-minute podcast:
       </Typography>
       <List>
         {podcasts.map((podcast, index) => (
@@ -34,6 +58,10 @@ const PodcastList: React.FC<PodcastListProps> = ({
               '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' },
               display: 'flex',
               alignItems: 'center',
+              ...(currentPodcast?.id === podcast.id && {
+                bgcolor: 'rgba(29, 185, 84, 0.1)', // Spotify green with low opacity
+                '&:hover': { bgcolor: 'rgba(29, 185, 84, 0.15)' },
+              }),
             }}
           >
             <Typography sx={{ color: 'text.secondary', mr: 2, width: 20 }}>
@@ -43,9 +71,13 @@ const PodcastList: React.FC<PodcastListProps> = ({
             <ListItemText
               primary={podcast.title}
               secondary={podcast.author}
-              primaryTypographyProps={{ color: 'text.primary', fontWeight: 'medium' }}
+              primaryTypographyProps={{ 
+                color: 'text.primary', 
+                fontWeight: currentPodcast?.id === podcast.id ? 'bold' : 'medium' 
+              }}
               secondaryTypographyProps={{ color: 'text.secondary' }}
             />
+            {currentPodcast?.id === podcast.id && isPlaying && <WaveForm />}
             <IconButton 
               edge="end" 
               aria-label="play" 

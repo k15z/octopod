@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Button } from "@mui/material";
+import { Link } from "react-router-dom";
 import Header from "./Header";
 import Player from "./Player";
 import PodcastList from "./PodcastList";
@@ -165,6 +166,15 @@ const HomePage: React.FC = () => {
         </Box>
       ) : (
         <>
+          <Button
+            component={Link}
+            to="/vertical-player"
+            variant="contained"
+            color="primary"
+            sx={{ m: 2 }}
+          >
+            Try Vertical Swipe Player
+          </Button>
           <PodcastList
             podcasts={podcasts}
             currentPodcast={currentPodcast}

@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import LoginPage from './components/LoginPage';
 import SignUpPage from './components/SignUpPage';
 import HomePage from './components/HomePage';
+import VerticalSwipePlayer from './components/VerticalSwipePlayer';
 import PrivateRoute from './components/PrivateRoute';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -41,6 +42,14 @@ const App: React.FC = () => {
               element={
                 <PrivateRoute>
                   <HomePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vertical-player"
+              element={
+                <PrivateRoute>
+                  <VerticalSwipePlayer />
                 </PrivateRoute>
               }
             />

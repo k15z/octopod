@@ -160,12 +160,20 @@ async def list_podclips(
     q: str = "",
     min_duration: int = 0,
     max_duration: int = 360000,
+    offset: int = 0,
+    limit: int = 10,
     podcast_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
 ) -> ListPodclipsResponse:
-    query = select(PodclipModel).where(
-        PodclipModel.duration >= min_duration,
-        PodclipModel.duration <= max_duration,
+    query = (
+        select(PodclipModel)
+        .where(
+            PodclipModel.duration >= min_duration,
+            PodclipModel.duration <= max_duration,
+        )
+        .order_by(PodclipModel.created_at.desc())
+        .offset(offset)
+        .limit(limit)
     )
     if q:
         query = query.where(

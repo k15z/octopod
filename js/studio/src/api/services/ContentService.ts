@@ -123,6 +123,8 @@ export class ContentService {
      * @param q
      * @param minDuration
      * @param maxDuration
+     * @param offset
+     * @param limit
      * @param podcastId
      * @returns ListPodclipsResponse Successful Response
      * @throws ApiError
@@ -131,6 +133,8 @@ export class ContentService {
         q: string = '',
         minDuration?: number,
         maxDuration: number = 360000,
+        offset?: number,
+        limit: number = 10,
         podcastId?: (string | null),
     ): CancelablePromise<ListPodclipsResponse> {
         return __request(OpenAPI, {
@@ -140,6 +144,8 @@ export class ContentService {
                 'q': q,
                 'min_duration': minDuration,
                 'max_duration': maxDuration,
+                'offset': offset,
+                'limit': limit,
                 'podcast_id': podcastId,
             },
             errors: {

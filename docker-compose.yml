@@ -22,6 +22,9 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PROXY_PASS_ROOT=/api
       - POSTGRES_DSN=${POSTGRES_DSN}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
     depends_on:
       redis:
         condition: service_healthy

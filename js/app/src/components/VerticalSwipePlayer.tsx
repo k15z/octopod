@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
-import { playlist } from '../api/services.gen';
+import { playlist, playPodclip, skipPodclip } from '../api/services.gen';
 import { Podclip } from '../api/types.gen';
 import { Podcast } from '../types';
 import SwipeableViews from 'react-swipeable-views';
@@ -12,8 +12,11 @@ const VerticalSwipePlayer: React.FC = () => {
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   const fetchPlaylist = useCallback(async () => {
+    if (!token) return;
     try {
       const response = await playlist({
         baseUrl: 'http://localhost:18888/api',
@@ -42,15 +45,75 @@ const VerticalSwipePlayer: React.FC = () => {
   }, [token]);
 
   useEffect(() => {
-    if (token) {
-      fetchPlaylist();
-    }
-  }, [token, fetchPlaylist]);
+    fetchPlaylist();
+  }, [fetchPlaylist]);
 
-  const handleChangeIndex = (index: number) => {
+  const markPodcastAsPlayed = useCallback(async (podcast: Podcast) => {
+    if (!token) return;
+    try {
+      await playPodclip({
+        baseUrl: 'http://localhost:18888/api',
+        path: {
+          podclip_id: podcast.id,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error('Error marking podcast as played:', error);
+    }
+  }, [token]);
+
+  const markPodcastAsSkipped = useCallback(async (podcast: Podcast, skipTime: number) => {
+    if (!token) return;
+    try {
+      await skipPodclip({
+        baseUrl: 'http://localhost:18888/api',
+        path: {
+          podclip_id: podcast.id,
+        },
+        query: {
+          skip_time: skipTime,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error('Error marking podcast as skipped:', error);
+    }
+  }, [token]);
+
+  const handlePodcastEnded = useCallback(async () => {
+    const currentPodcast = podcasts[currentIndex];
+    
+    if (currentIndex < podcasts.length - 1) {
+        setCurrentIndex(prevIndex => prevIndex + 1);
+        setIsPlaying(true);
+    } else {
+        await markPodcastAsPlayed(currentPodcast);
+      setIsPlaying(false);
+    }
+  }, [currentIndex, podcasts, markPodcastAsPlayed]);
+
+  const handleChangeIndex = useCallback(async (index: number) => {
+    const previousPodcast = podcasts[currentIndex];
+
+    if (currentTime / duration > 0.6) {
+        await markPodcastAsPlayed(previousPodcast);
+      } else {
+        await markPodcastAsSkipped(previousPodcast, currentTime);
+      }
+
     setCurrentIndex(index);
     setIsPlaying(true);
-  };
+  }, [currentIndex, podcasts, markPodcastAsSkipped, currentTime, duration, markPodcastAsPlayed]);
+
+  const handleProgressChange = useCallback((newCurrentTime: number, newDuration: number) => {
+    setCurrentTime(newCurrentTime);
+    setDuration(newDuration);
+  }, []);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (event.key === 'ArrowUp' && currentIndex > 0) {
@@ -90,6 +153,8 @@ const VerticalSwipePlayer: React.FC = () => {
               isActive={index === currentIndex}
               isPlaying={isPlaying && index === currentIndex}
               onTogglePlay={() => setIsPlaying(!isPlaying)}
+              onEnded={handlePodcastEnded}
+              onProgressChange={handleProgressChange}
             />
           </Box>
         ))}

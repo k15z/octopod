@@ -15,6 +15,8 @@ interface PodcastCardProps {
   isActive: boolean;
   isPlaying: boolean;
   onTogglePlay: () => void;
+  onEnded: () => void;
+  onProgressChange: (currentTime: number, duration: number) => void;
 }
 
 const getRandomGradient = () => {
@@ -40,7 +42,14 @@ const scrollAnimation = keyframes`
   50% { transform: translateX(calc(-100% + 300px)); }
 `;
 
-const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, isActive, isPlaying, onTogglePlay }) => {
+const PodcastCard: React.FC<PodcastCardProps> = ({
+  podcast,
+  isActive,
+  isPlaying,
+  onTogglePlay,
+  onEnded,
+  onProgressChange
+}) => {
   const [progress, setProgress] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -64,14 +73,24 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, isActive, isPlaying,
       const currentTime = audio.currentTime;
       if (duration > 0) {
         setProgress((currentTime / duration) * 100);
+        if (isActive) {
+          onProgressChange(currentTime, duration);
+        }
       }
     };
 
+    const handleEnded = () => {
+      onEnded();
+    };
+
     audio.addEventListener("timeupdate", updateProgress);
+    audio.addEventListener("ended", handleEnded);
+
     return () => {
       audio.removeEventListener("timeupdate", updateProgress);
+      audio.removeEventListener("ended", handleEnded);
     };
-  }, []);
+  }, [isActive, onEnded, onProgressChange]);
 
   useEffect(() => {
     if (titleRef.current) {

@@ -15,9 +15,10 @@ class RegisterCreatorRequest(BaseModel):
     name: str
     uma_address: str
 
+
 class PaymentResponse(BaseModel):
     id: UUID
     created_at: datetime
     sender_id: UUID
     sender_email: str
-    amount: int
+    amount: float

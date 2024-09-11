@@ -12,7 +12,7 @@ from octopod.core.auth import (
     decode_creator_token,
 )
 from octopod.database import get_db
-from octopod.models import Creator, Payment, TipEvent
+from octopod.models import Creator, Payment
 from octopod.core.creator.schema import (
     RegisterCreatorRequest,
     CreatorProfile,
@@ -81,12 +81,17 @@ async def creator_profile(
         uma_address=creator.uma_address,
     )
 
+
 @router.get("/payments")
 async def creator_payments(
     token: TokenData = Depends(decode_creator_token),
     db: AsyncSession = Depends(get_db),
 ) -> List[PaymentResponse]:
-    result = await db.execute(select(Payment).where(Payment.creator_id == token.id).order_by(Payment.created_at.desc()))
+    result = await db.execute(
+        select(Payment)
+        .where(Payment.creator_id == token.id)
+        .order_by(Payment.created_at.desc())
+    )
     payments = []
     for payment in result.scalars().all():
         await db.refresh(payment, ["user"])

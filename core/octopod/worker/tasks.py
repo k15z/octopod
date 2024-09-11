@@ -88,6 +88,7 @@ async def handle_podcast(podcast_id: UUID):
                         duration=podclip.end_time - podclip.start_time,
                         start_time=podclip.start_time,
                         end_time=podclip.end_time,
+                        embedding=podclip.embedding,
                     )
                 )
                 await session.commit()

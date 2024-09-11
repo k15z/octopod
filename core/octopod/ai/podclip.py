@@ -29,6 +29,7 @@ class Podclip:
     start_time: float
     end_time: float
     text: str
+    embedding: List[float]
 
 
 TOPICS_PROMPT = Template(
@@ -170,12 +171,18 @@ class Window:
             print(indices)
             return None
 
+        embed = client.embeddings.create(
+            model="text-embedding-3-small",
+            input=topic.description,
+        )
+
         return Podclip(
             title=topic.title,
             description=topic.description,
             start_time=start_ts,
             end_time=end_ts,
             text=" ".join(x.text for x in lines[start:end]),
+            embedding=embed.data[0].embedding,
         )
 
 

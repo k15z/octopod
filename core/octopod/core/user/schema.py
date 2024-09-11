@@ -20,3 +20,10 @@ class GetUserInfoResponse(BaseModel):
 class RegisterUserRequest(BaseModel):
     email: str
     nwc_string: str
+
+class UserStatistics(BaseModel):
+
+    weekly_spend: int
+    lifetime_spend: int
+    seconds_listened: int
+    seconds_saved: int

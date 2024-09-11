@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from octopod.core.auth import (
@@ -12,7 +12,7 @@ from octopod.core.auth import (
     create_token,
 )
 from octopod.database import get_db
-from octopod.core.user.schema import UserProfile, RegisterUserRequest
+from octopod.core.user.schema import UserProfile, RegisterUserRequest, UserStatistics
 from octopod.models import User
 
 router = APIRouter(prefix="/user", tags=["user"])
@@ -66,3 +66,46 @@ async def user_profile(
             detail="Could not validate credentials",
         )
     return UserProfile(id=user.id, email=user.email, nwc_string=user.nwc_string)
+
+@router.get("/statistics")
+async def user_statistics(
+    token: TokenData = Depends(decode_user_token),
+    db: AsyncSession = Depends(get_db),
+) -> UserStatistics:
+    query = """
+    SELECT
+        SUM(amount) AS lifetime_spend,
+        SUM(CASE WHEN created_at < NOW() - INTERVAL '7 DAYS' THEN 0 ELSE amount END) AS weekly_spend
+    FROM payment
+    WHERE user_id = :user_id
+    """
+    result = await db.execute(text(query), {"user_id": token.id})
+    lifetime_spend, weekly_spend = result.fetchone()
+
+    query = """
+    SELECT
+        sum(podclip.duration) as seconds_listened
+    FROM play_event
+    JOIN podclip ON play_event.podclip_id = podclip.id
+    WHERE user_id = :user_id
+    """
+    result = await db.execute(text(query), {"user_id": token.id})
+    seconds_listened = result.scalar_one()
+
+    query = """
+    SELECT
+        sum(podcast.duration-podclip.duration) as seconds_listened
+    FROM play_event
+    JOIN podclip ON play_event.podclip_id = podclip.id
+    JOIN podcast ON play_event.podcast_id = podcast.id
+    WHERE user_id = :user_id
+    """
+    result = await db.execute(text(query), {"user_id": token.id})
+    seconds_saved = int(result.scalar_one())
+
+    return UserStatistics(
+        weekly_spend=weekly_spend,
+        lifetime_spend=lifetime_spend,
+        seconds_listened=seconds_listened,
+        seconds_saved=seconds_saved,
+    )

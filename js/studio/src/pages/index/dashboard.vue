@@ -1,12 +1,12 @@
 <template>
-    <v-container>
+    <v-container class="content">
         <v-row>
             <v-col cols="12">
                 <h1>Dashboard</h1>
             </v-col>
         </v-row>
         <v-row>
-            <v-col cols="4">
+            <v-col cols="12" md="6" lg="4">
                 <v-card>
                     <v-card-item>
                         <v-card-title>
@@ -58,7 +58,7 @@
                     </v-card-text>
                 </v-card>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="12" md="6" lg="4">
                 <v-card>
                     <v-card-item>
                         <v-card-title>
@@ -128,7 +128,7 @@
                     </v-card-text>
                 </v-card>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="12" md="6" lg="4">
                 <v-card>
                     <v-card-item>
                         <v-card-title>
@@ -159,3 +159,10 @@ ContentService.listPodcasts().then((response) => {
     podcasts.value = response.results;
 });
 </script>
+
+<style scoped>
+.content {
+    max-height: 100vh;
+    overflow-y: auto;
+}
+</style>

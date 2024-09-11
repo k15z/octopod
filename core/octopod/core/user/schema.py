@@ -1,4 +1,5 @@
 from uuid import UUID
+from typing import List
 from pydantic import BaseModel
 
 
@@ -22,9 +23,15 @@ class RegisterUserRequest(BaseModel):
     nwc_string: str
 
 
+class CreatorAmount(BaseModel):
+    creator: str
+    amount: int
+
+
 class UserStatistics(BaseModel):
 
     weekly_spend: int
     lifetime_spend: int
     seconds_listened: int
     seconds_saved: int
+    creator_amounts: List[CreatorAmount]

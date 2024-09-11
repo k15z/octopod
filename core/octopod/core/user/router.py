@@ -12,7 +12,12 @@ from octopod.core.auth import (
     create_token,
 )
 from octopod.database import get_db
-from octopod.core.user.schema import UserProfile, RegisterUserRequest, UserStatistics
+from octopod.core.user.schema import (
+    UserProfile,
+    RegisterUserRequest,
+    UserStatistics,
+    CreatorAmount,
+)
 from octopod.models import User
 
 router = APIRouter(prefix="/user", tags=["user"])
@@ -113,9 +118,28 @@ async def user_statistics(
     else:
         seconds_saved = int(result)
 
+    query = """
+    SELECT
+        creator.name,
+        SUM(amount) as amount
+    FROM payment
+    JOIN creator ON payment.creator_id = creator.id
+    WHERE user_id = :user_id
+    GROUP BY creator.name
+    """
+    result = (await db.execute(text(query), {"user_id": token.id})).fetchall()
+    creator_amounts = [
+        CreatorAmount(
+            creator=row[0],
+            amount=row[1],
+        )
+        for row in result
+    ]
+
     return UserStatistics(
         weekly_spend=weekly_spend,
         lifetime_spend=lifetime_spend,
         seconds_listened=seconds_listened,
         seconds_saved=seconds_saved,
+        creator_amounts=creator_amounts,
     )

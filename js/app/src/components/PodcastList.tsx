@@ -2,14 +2,7 @@ import React from 'react';
 import { List, ListItem, ListItemText, Typography, IconButton, Box, Avatar } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
-
-interface Podcast {
-  id: number;
-  title: string;
-  author: string;
-  url: string;
-  image: string;
-}
+import { Podcast } from '../types';
 
 interface PodcastListProps {
   podcasts: Podcast[];
@@ -28,31 +21,30 @@ const PodcastList: React.FC<PodcastListProps> = ({
 }) => {
   return (
     <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: 'background.default' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" component="h2">
-          Up next
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {/* TODO: Calculate and display remaining time */}
-          X:XX left
-        </Typography>
-      </Box>
+      <Typography variant="h6" component="h2" sx={{ mb: 2, color: 'text.primary' }}>
+        Podcasts
+      </Typography>
       <List>
-        {podcasts.map(podcast => (
+        {podcasts.map((podcast, index) => (
           <ListItem
             key={podcast.id}
             sx={{
               mb: 1,
-              bgcolor: 'background.paper', // Use the theme's paper color (#f3edf7)
               borderRadius: 1,
-              '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' },
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' },
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
-            <Avatar src={podcast.image} alt={podcast.title} sx={{ mr: 2, width: 60, height: 60 }} />
+            <Typography sx={{ color: 'text.secondary', mr: 2, width: 20 }}>
+              {index + 1}
+            </Typography>
+            <Avatar src={podcast.image} alt={podcast.title} sx={{ mr: 2, width: 40, height: 40 }} />
             <ListItemText
               primary={podcast.title}
               secondary={podcast.author}
-              primaryTypographyProps={{ fontWeight: 'bold' }}
+              primaryTypographyProps={{ color: 'text.primary', fontWeight: 'medium' }}
+              secondaryTypographyProps={{ color: 'text.secondary' }}
             />
             <IconButton 
               edge="end" 
@@ -64,6 +56,7 @@ const PodcastList: React.FC<PodcastListProps> = ({
                   onTogglePlay();
                 }
               }}
+              sx={{ color: 'primary.main' }}
             >
               {currentPodcast?.id === podcast.id && isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
             </IconButton>

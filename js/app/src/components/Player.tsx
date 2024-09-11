@@ -4,14 +4,7 @@ import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import PauseRounded from '@mui/icons-material/PauseRounded';
 import SkipPreviousRounded from '@mui/icons-material/SkipPreviousRounded';
 import SkipNextRounded from '@mui/icons-material/SkipNextRounded';
-
-interface Podcast {
-  id: number;
-  title: string;
-  author: string;
-  url: string;
-  image: string;
-}
+import { Podcast } from '../types';
 
 interface PlayerProps {
   podcast: Podcast | null;
@@ -48,79 +41,41 @@ const Player: React.FC<PlayerProps> = ({ podcast, isPlaying, onTogglePlay }) => 
 
   return (
     <Card sx={{ 
-      m: 2, 
-      borderRadius: 2,
-      boxShadow: 3,
-      bgcolor: '#f39a73', // Player background color
+      borderRadius: 0,
+      bgcolor: '#282828', // Dark grey background
+      position: 'sticky',
+      bottom: 0,
+      left: 0,
+      right: 0,
     }}>
-      <CardContent sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <CardMedia
-            component="img"
-            sx={{ width: 80, height: 80, borderRadius: 2, mr: 2 }}
-            image={podcast.image}
-            alt={podcast.title}
-          />
-          <Box>
-            <Typography variant="h6" noWrap color="text.primary">{podcast.title}</Typography>
-            <Typography variant="subtitle1" noWrap color="text.secondary">{podcast.author}</Typography>
-          </Box>
+      <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
+        <CardMedia
+          component="img"
+          sx={{ width: 56, height: 56, borderRadius: 1, mr: 2 }}
+          image={podcast.image}
+          alt={podcast.title}
+        />
+        <Box sx={{ flexGrow: 1, mr: 2 }}>
+          <Typography variant="subtitle1" color="text.primary" noWrap>{podcast.title}</Typography>
+          <Typography variant="body2" color="text.secondary" noWrap>{podcast.author}</Typography>
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-          <IconButton 
-            sx={{ 
-                mx: 1,
-                width: 56,
-                height: 56,
-                backgroundColor: '#f0f0f0', // Light grey background
-                '&:hover': {
-                  backgroundColor: '#e0e0e0', // Slightly darker on hover
-                },
-                boxShadow: 3,
-                '&:active': {
-                  boxShadow: 6,
-                },
-            }}
-          >
-            <SkipPreviousRounded sx={{ fontSize: 38, color: '#757575' }} />
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton sx={{ color: 'text.primary' }}>
+            <SkipPreviousRounded />
           </IconButton>
           <IconButton 
             onClick={onTogglePlay} 
             sx={{ 
-                mx: 1,
-                width: 56,
-                height: 56,
-                backgroundColor: '#f0f0f0', // Light grey background
-                '&:hover': {
-                  backgroundColor: '#e0e0e0', // Slightly darker on hover
-                },
-                boxShadow: 3,
-                '&:active': {
-                  boxShadow: 6,
-                },
-            }}
-          >
-            {isPlaying ? 
-              <PauseRounded sx={{ fontSize: 38, color: '#757575' }} /> : 
-              <PlayArrowRounded sx={{ fontSize: 38, color: '#757575' }} />
-            }
-          </IconButton>
-          <IconButton
-            sx={{
               mx: 1,
-              width: 56,
-              height: 56,
-              backgroundColor: '#f0f0f0', // Light grey background
-              '&:hover': {
-                backgroundColor: '#e0e0e0', // Slightly darker on hover
-              },
-              boxShadow: 3,
-              '&:active': {
-                boxShadow: 6,
-              },
+              color: 'text.primary',
+              bgcolor: 'primary.main',
+              '&:hover': { bgcolor: 'primary.dark' },
             }}
           >
-            <SkipNextRounded sx={{ fontSize: 38, color: '#757575' }} />
+            {isPlaying ? <PauseRounded /> : <PlayArrowRounded />}
+          </IconButton>
+          <IconButton sx={{ color: 'text.primary' }}>
+            <SkipNextRounded />
           </IconButton>
         </Box>
       </CardContent>

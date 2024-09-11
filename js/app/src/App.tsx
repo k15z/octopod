@@ -1,67 +1,69 @@
-import React, { useState } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { ThemeProvider, createTheme, CssBaseline, Box, CircularProgress } from '@mui/material';
 import Header from './components/Header';
 import Player from './components/Player';
 import PodcastList from './components/PodcastList';
 import Footer from './components/Footer';
-
-interface Podcast {
-  id: number;
-  title: string;
-  author: string;
-  url: string;
-  image: string;
-}
+import { listPodcasts } from './api/services.gen';
+import { Podcast as APIPodcast } from './api/types.gen';
+import { Podcast } from './types';
 
 const theme = createTheme({
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
-      main: '#FF5722', // Orange color for the player
+      main: '#1DB954', // Spotify green
     },
     background: {
-      default: '#ffffff', // Main app background (white)
-      paper: '#f3edf7', // Background for podcast list items and footer
+      default: '#121212', // Dark background
+      paper: '#181818', // Slightly lighter background for components
     },
-    action: {
-      active: '#FF5722', // Orange color for active icons
+    text: {
+      primary: '#FFFFFF',
+      secondary: '#B3B3B3',
     },
+  },
+  typography: {
+    fontFamily: '"Circular", "Helvetica", "Arial", sans-serif',
   },
 });
 
 const App: React.FC = () => {
-  // Base64-encoded audio samples (very short beep sounds)
-  const audioSample1 = `data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU9vT18A${"//".repeat(8192)}AA==`;
-  const audioSample2 = "data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU9vT1/////+/v7//f39//z8/P/7+/v/+vr6//n5+f/4+Pj/9/f3//b29v/19fX/9PT0//Pz8//y8vL/8fHx//Dw8P8=";
-  const audioSample3 = "data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU9vT18AAAD//////v7+//39/f/8/Pz/+/v7//r6+v/5+fn/+Pj4//f39//29vb/9fX1//T09P/z8/P/8vLy//Hx8f8=";
-
-  const podcasts: Podcast[] = [
-    {
-      id: 1,
-      title: "Audio Sample 1",
-      author: "Test Author",
-      url: audioSample1,
-      image: "https://via.placeholder.com/150"
-    },
-    {
-      id: 2,
-      title: "Audio Sample 2",
-      author: "Test Author",
-      url: audioSample2,
-      image: "https://via.placeholder.com/150"
-    },
-    {
-      id: 3,
-      title: "Audio Sample 3",
-      author: "Test Author",
-      url: audioSample3,
-      image: "https://via.placeholder.com/150"
-    },
-  ];
-
-  // Initialize currentPodcast with the first podcast in the list
-  const [currentPodcast, setCurrentPodcast] = useState<Podcast | null>(podcasts[0]);
+  const [podcasts, setPodcasts] = useState<Podcast[]>([]);
+  const [currentPodcast, setCurrentPodcast] = useState<Podcast | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPodcasts = async () => {
+      setIsLoading(true);
+      try {
+        const response = await listPodcasts({
+          // TODO: Replace with env configuration based on dev/prod.
+          baseUrl: 'http://localhost:18888/api',
+        });
+        if (response.data) {
+          const fetchedPodcasts: Podcast[] = response.data.results.map((apiPodcast: APIPodcast) => ({
+            id: apiPodcast.id,
+            title: apiPodcast.title,
+            author: apiPodcast.creator_name,
+            url: apiPodcast.audio_url || '',
+            image: apiPodcast.cover_url || 'https://via.placeholder.com/150'
+          }));
+          setPodcasts(fetchedPodcasts);
+          if (fetchedPodcasts.length > 0) {
+            setCurrentPodcast(fetchedPodcasts[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching podcasts:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPodcasts();
+  }, []);
 
   const handleSelectPodcast = (podcast: Podcast) => {
     setCurrentPodcast(podcast);
@@ -82,18 +84,33 @@ const App: React.FC = () => {
         bgcolor: 'background.default'
       }}>
         <Header />
-        <Player 
-          podcast={currentPodcast} 
-          isPlaying={isPlaying} 
-          onTogglePlay={handleTogglePlay}
-        />
-        <PodcastList 
-          podcasts={podcasts}
-          currentPodcast={currentPodcast}
-          isPlaying={isPlaying}
-          onSelectPodcast={handleSelectPodcast}
-          onTogglePlay={handleTogglePlay}
-        />
+        {isLoading ? (
+          <Box sx={{ 
+            flex: 1, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center' 
+          }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <PodcastList 
+              podcasts={podcasts}
+              currentPodcast={currentPodcast}
+              isPlaying={isPlaying}
+              onSelectPodcast={handleSelectPodcast}
+              onTogglePlay={handleTogglePlay}
+            />
+            {currentPodcast && (
+              <Player 
+                podcast={currentPodcast} 
+                isPlaying={isPlaying} 
+                onTogglePlay={handleTogglePlay}
+              />
+            )}
+          </>
+        )}
         <Footer />
       </Box>
     </ThemeProvider>

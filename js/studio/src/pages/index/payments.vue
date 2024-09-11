@@ -7,7 +7,7 @@
         </v-row>
         <v-row>
             <v-col cols="12">
-                <pre>{{ JSON.stringify(podcasts, null, 2) }}</pre>
+                TODO
             </v-col>
         </v-row>
     </v-container>
@@ -15,12 +15,4 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { ContentService, Podcast } from '@/api';
-
-const podcasts = ref<Podcast[]>([]);
-
-ContentService.listPodcasts().then((response) => {
-    podcasts.value = response.results;
-});
 </script>

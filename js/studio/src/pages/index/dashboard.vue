@@ -40,7 +40,7 @@
                         </v-list>
                     </v-card-text>
                 </v-card>
-                <br/>
+                <br />
                 <v-card>
                     <v-card-item>
                         <v-card-title>
@@ -70,46 +70,48 @@
                     </v-card-item>
                     <v-card-text>
                         <table style="width:100%; text-align: center;">
-                            <tr>
-                                <td class="pa-4">
-                                    <span style="font-size:2em;">$210.32</span>
-                                    <br />
-                                    stream revenue
-                                </td>
-                                <td class="pa-4">
-                                    <span style="font-size:2em;">$32.88</span>
-                                    <br />
-                                    tip revenue
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="pa-4">
-                                    <span style="font-size:2em;">7,010</span>
-                                    <br />
-                                    unique plays
-                                </td>
-                                <td>
-                                    <span style="font-size:2em;">24%</span>
-                                    <br />
-                                    skip rate
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="pa-4">
-                                    <span style="font-size:2em;">194h 34m</span>
-                                    <br />
-                                    listen time
-                                </td>
-                                <td>
-                                    <span style="font-size:2em;">426</span>
-                                    <br />
-                                    unique listeners
-                                </td>
-                            </tr>
+                            <tbody>
+                                <tr>
+                                    <td class="pa-4">
+                                        <span style="font-size:2em;">$210.32</span>
+                                        <br />
+                                        stream revenue
+                                    </td>
+                                    <td class="pa-4">
+                                        <span style="font-size:2em;">$32.88</span>
+                                        <br />
+                                        tip revenue
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pa-4">
+                                        <span style="font-size:2em;">7,010</span>
+                                        <br />
+                                        unique plays
+                                    </td>
+                                    <td>
+                                        <span style="font-size:2em;">24%</span>
+                                        <br />
+                                        skip rate
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pa-4">
+                                        <span style="font-size:2em;">194h 34m</span>
+                                        <br />
+                                        listen time
+                                    </td>
+                                    <td>
+                                        <span style="font-size:2em;">426</span>
+                                        <br />
+                                        unique listeners
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                     </v-card-text>
                 </v-card>
-                <br/>
+                <br />
                 <v-card>
                     <v-card-item>
                         <v-card-title>

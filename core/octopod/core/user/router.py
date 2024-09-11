@@ -67,6 +67,7 @@ async def user_profile(
         )
     return UserProfile(id=user.id, email=user.email, nwc_string=user.nwc_string)
 
+
 @router.get("/statistics")
 async def user_statistics(
     token: TokenData = Depends(decode_user_token),
@@ -79,8 +80,11 @@ async def user_statistics(
     FROM payment
     WHERE user_id = :user_id
     """
-    result = await db.execute(text(query), {"user_id": token.id})
-    lifetime_spend, weekly_spend = result.fetchone()
+    row = (await db.execute(text(query), {"user_id": token.id})).fetchone()
+    if row is None:
+        lifetime_spend = weekly_spend = 0
+    else:
+        lifetime_spend, weekly_spend = row
 
     query = """
     SELECT
@@ -89,8 +93,11 @@ async def user_statistics(
     JOIN podclip ON play_event.podclip_id = podclip.id
     WHERE user_id = :user_id
     """
-    result = await db.execute(text(query), {"user_id": token.id})
-    seconds_listened = result.scalar_one()
+    result = (await db.execute(text(query), {"user_id": token.id})).scalar_one()
+    if result is None:
+        seconds_listened = 0
+    else:
+        seconds_listened = result
 
     query = """
     SELECT
@@ -100,8 +107,11 @@ async def user_statistics(
     JOIN podcast ON play_event.podcast_id = podcast.id
     WHERE user_id = :user_id
     """
-    result = await db.execute(text(query), {"user_id": token.id})
-    seconds_saved = int(result.scalar_one())
+    result = (await db.execute(text(query), {"user_id": token.id})).scalar_one()
+    if result is None:
+        seconds_saved = 0
+    else:
+        seconds_saved = int(result.scalar_one())
 
     return UserStatistics(
         weekly_spend=weekly_spend,

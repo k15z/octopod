@@ -21,6 +21,7 @@ class RegisterUserRequest(BaseModel):
     email: str
     nwc_string: str
 
+
 class UserStatistics(BaseModel):
 
     weekly_spend: int

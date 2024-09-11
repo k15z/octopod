@@ -25,6 +25,7 @@ requests = "*"
 secp256k1 = "*"
 alembic = "*"
 typing-extensions = "*"
+pgvector = "*"
 
 [dev-packages]
 mypy = "*"

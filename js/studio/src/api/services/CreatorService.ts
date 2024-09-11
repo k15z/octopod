@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { Body_creator_token } from '../models/Body_creator_token';
 import type { CreatorProfile } from '../models/CreatorProfile';
+import type { PaymentResponse } from '../models/PaymentResponse';
 import type { RegisterCreatorRequest } from '../models/RegisterCreatorRequest';
 import type { Token } from '../models/Token';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -57,6 +58,17 @@ export class CreatorService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/creator/profile',
+        });
+    }
+    /**
+     * Creator Payments
+     * @returns PaymentResponse Successful Response
+     * @throws ApiError
+     */
+    public static creatorPayments(): CancelablePromise<Array<PaymentResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/creator/payments',
         });
     }
 }

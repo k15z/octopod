@@ -1,10 +1,11 @@
 from typing import Literal, Optional
 from uuid import UUID
+from random import choice
 
 import boto3
 from botocore.config import Config as BotocoreConfig
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from octopod.core.auth import TokenData, decode_user_token, decode_creator_token
@@ -293,7 +294,7 @@ async def tip_podclip(
         user_id=token.id,
         creator_id=podclip.podcast.creator_id,
         amount=amount,
-        # TODO: Actually send the payment.
+        payment_hash="NOT_PAID",  # TODO: Actually send the payment.
     )
     db.add(payment)
     await db.commit()
@@ -328,7 +329,7 @@ async def play_podclip(
         user_id=token.id,
         creator_id=podclip.podcast.creator_id,
         amount=int(podclip.duration),  # 1 sat per second
-        # TODO: Actually send the payment.
+        payment_hash="NOT_PAID",  # TODO: Actually send the payment.
     )
     db.add(payment)
     await db.commit()
@@ -351,8 +352,42 @@ async def playlist(
     token: TokenData = Depends(decode_user_token),
     db: AsyncSession = Depends(get_db),
 ) -> MakePlaylistResponse:
-    # TODO: Personalize the playlist based on user's listening history.
-    result = await db.execute(select(PodclipModel).limit(10))
+    recent_plays = (
+        (
+            await db.execute(
+                select(PlayEvent)
+                .where(PlayEvent.user_id == token.id)
+                .order_by(PlayEvent.created_at.desc())
+                .limit(10)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    if recent_plays:
+        # User has recent plays, get content-based recommendations.
+        # [TODO] Make this actually good.
+        play_event = choice(recent_plays)
+        await db.refresh(play_event, ["podclip"])
+        assert play_event.podclip is not None
+        result = await db.execute(
+            select(PodclipModel)
+            .order_by(PodclipModel.embedding.l2_distance(play_event.podclip.embedding))
+            .where(PodclipModel.id.not_in([play.podclip_id for play in recent_plays]))
+            .limit(10)
+        )
+    else:
+        # No recent plays, just get the most popular podcasts.
+        count = (
+            select(func.count(PlayEvent.id))
+            .where(PlayEvent.podclip_id == PodclipModel.id)
+            .scalar_subquery()
+            .label("count")
+        )
+        result = await db.execute(
+            select(PodclipModel, count).order_by(count.desc()).limit(10)
+        )
+
     results = []
     duration = 0
     for podclip in result.scalars().all():

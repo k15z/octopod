@@ -3,12 +3,13 @@ from enum import Enum
 from random import randbytes
 from time import time
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
+from pgvector.sqlalchemy import Vector  # type: ignore
 
 
 def generate_uuid() -> UUID:
@@ -90,6 +91,7 @@ class Podclip(Base):
     duration: Mapped[int] = mapped_column()
     start_time: Mapped[float] = mapped_column()
     end_time: Mapped[float] = mapped_column()
+    embedding: Mapped[List[float]] = mapped_column(Vector(1536))
 
     podcast: Mapped["Podcast"] = relationship("Podcast", backref="podclips")
 

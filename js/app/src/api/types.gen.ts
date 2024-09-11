@@ -256,8 +256,10 @@ export type DeletePodcastError = (HTTPValidationError);
 
 export type ListPodclipsData = {
     query?: {
+        limit?: number;
         max_duration?: number;
         min_duration?: number;
+        offset?: number;
         podcast_id?: (string | null);
         q?: string;
     };

@@ -263,7 +263,7 @@ export const PaymentResponseSchema = {
             title: 'Sender Email'
         },
         amount: {
-            type: 'integer',
+            type: 'number',
             title: 'Amount'
         }
     },

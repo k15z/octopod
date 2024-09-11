@@ -1,6 +1,5 @@
 from typing import Literal, Optional
 from uuid import UUID
-from random import choice
 
 import boto3
 from botocore.config import Config as BotocoreConfig
@@ -377,7 +376,8 @@ async def playlist(
     cf = ContentFilter()
     for play in recent_plays:
         await db.refresh(play, ["podclip"])
-        cf.add(play.podclip)
+        if play.podclip:
+            cf.add(play.podclip)
     if recent_plays:
         # User has recent plays, get content-based recommendations.
         query = """
@@ -402,19 +402,24 @@ async def playlist(
         
         SELECT podclip_id, score FROM podclip_ranking ORDER BY score ASC LIMIT 100
         """
-        result = await db.execute(text(query), {"values": [x.podclip_id for x in recent_plays]})
-        result = result.fetchall()
-        if not result:
+        ranking = (
+            await db.execute(
+                text(query), {"values": [x.podclip_id for x in recent_plays]}
+            )
+        ).fetchall()
+        if not ranking:
             return MakePlaylistResponse(duration=0, results=[])
-        
-        select_ids = [podclip_id for podclip_id, _ in result]
+
+        select_ids = [podclip_id for podclip_id, _ in ranking]
 
         result = await db.execute(
             select(PodclipModel)
-            .options(selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator))
+            .options(
+                selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator)
+            )
             .where(PodclipModel.id.in_(select_ids))
         )
-        podclips = result.scalars().all() # Sort to match selected_podclip_ids
+        podclips = result.scalars().all()  # Sort to match selected_podclip_ids
         podclips = list(sorted(podclips, key=lambda x: select_ids.index(x.id)))
         print(podclips[:10])
 
@@ -428,8 +433,11 @@ async def playlist(
         )
         result = await db.execute(
             select(PodclipModel, count)
-            .options(selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator))
-            .order_by(count.desc()).limit(20)
+            .options(
+                selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator)
+            )
+            .order_by(count.desc())
+            .limit(20)
         )
         podclips = result.scalars().all()
 

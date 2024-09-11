@@ -168,7 +168,7 @@ const HomePage: React.FC = () => {
         <>
           <Button
             component={Link}
-            to="/vertical-player"
+            to="/"
             variant="contained"
             color="primary"
             sx={{ m: 2 }}

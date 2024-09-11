@@ -41,15 +41,15 @@ const App: React.FC = () => {
               path="/"
               element={
                 <PrivateRoute>
-                  <HomePage />
+                  <VerticalSwipePlayer />
                 </PrivateRoute>
               }
             />
             <Route
-              path="/vertical-player"
+              path="/old-player"
               element={
                 <PrivateRoute>
-                  <VerticalSwipePlayer />
+                  <HomePage />
                 </PrivateRoute>
               }
             />

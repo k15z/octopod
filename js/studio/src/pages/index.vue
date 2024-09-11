@@ -31,7 +31,7 @@
                 </div>
             </template>
         </v-navigation-drawer>
-        <v-main>
+        <v-main class="container">
             <div class="ml-4 mr-4 mt-2 mb-2">
                 <RouterView></RouterView>
             </div>
@@ -59,6 +59,10 @@ function logout() {
 </script>
 
 <style scoped>
+.container {
+    max-height: 100vh;
+}
+
 ::v-deep(.v-list-item--active) {
     background-color: #1DB954;
 }

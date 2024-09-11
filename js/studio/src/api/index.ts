@@ -15,6 +15,7 @@ export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { ListPodcastsResponse } from './models/ListPodcastsResponse';
 export type { ListPodclipsResponse } from './models/ListPodclipsResponse';
 export type { MakePlaylistResponse } from './models/MakePlaylistResponse';
+export type { PaymentResponse } from './models/PaymentResponse';
 export type { Podcast } from './models/Podcast';
 export type { Podclip } from './models/Podclip';
 export type { PresignedUrlResponse } from './models/PresignedUrlResponse';

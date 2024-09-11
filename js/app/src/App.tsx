@@ -6,7 +6,7 @@ import SignUpPage from './components/SignUpPage';
 import HomePage from './components/HomePage';
 import VerticalSwipePlayer from './components/VerticalSwipePlayer';
 import PrivateRoute from './components/PrivateRoute';
-import { AuthProvider } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContext';
 
 const theme = createTheme({
   palette: {
@@ -29,35 +29,39 @@ const theme = createTheme({
 });
 
 const App: React.FC = () => {
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
+
   return (
-    <AuthProvider>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Router>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <VerticalSwipePlayer />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/old-player"
-              element={
-                <PrivateRoute>
-                  <HomePage />
-                </PrivateRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </ThemeProvider>
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <VerticalSwipePlayer />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/old-player"
+            element={
+              <PrivateRoute>
+                <HomePage />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 };
 

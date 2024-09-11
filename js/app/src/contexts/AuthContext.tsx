@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { userToken, userRegister } from '../api/services.gen';
+import { getApiBaseUrl } from '../utils/apiConfig';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -8,29 +9,31 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, nwcString: string) => Promise<void>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [authState, setAuthState] = useState(() => {
     const storedToken = localStorage.getItem('token');
     const storedEmail = localStorage.getItem('userEmail');
-    if (storedToken && storedEmail) {
-      setIsLoggedIn(true);
-      setUserEmail(storedEmail);
-      setToken(storedToken);
-    }
+    return {
+      isLoggedIn: !!storedToken,
+      userEmail: storedEmail || '',
+      token: storedToken,
+    };
+  });
+
+  useEffect(() => {
+    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       const response = await userToken({
-        baseUrl: 'http://localhost:18888/api',
+        baseUrl: getApiBaseUrl(),
         body: {
           username: email,
           password: password,
@@ -38,9 +41,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (response.data && response.data.access_token) {
-        setIsLoggedIn(true);
-        setUserEmail(email);
-        setToken(response.data.access_token);
+        setAuthState({
+          isLoggedIn: true,
+          userEmail: email,
+          token: response.data.access_token,
+        });
         localStorage.setItem('userEmail', email);
         localStorage.setItem('token', response.data.access_token);
       } else {
@@ -55,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (email: string, password: string, nwcString: string) => {
     try {
       const registerResponse = await userRegister({
-        baseUrl: 'http://localhost:18888/api',
+        baseUrl: getApiBaseUrl(),
         body: {
           email: email,
           nwc_string: nwcString,
@@ -63,7 +68,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (registerResponse.data) {
-        // After successful registration, log the user in
         await login(email, password);
       } else {
         throw new Error('Sign up failed');
@@ -75,15 +79,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    setIsLoggedIn(false);
-    setUserEmail('');
-    setToken(null);
+    setAuthState({
+      isLoggedIn: false,
+      userEmail: '',
+      token: null,
+    });
     localStorage.removeItem('userEmail');
     localStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userEmail, token, login, signup, logout }}>
+    <AuthContext.Provider 
+      value={{ 
+        ...authState, 
+        login, 
+        signup, 
+        logout,
+        isLoading 
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

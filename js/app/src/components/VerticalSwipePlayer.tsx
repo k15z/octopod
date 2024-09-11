@@ -6,6 +6,7 @@ import { Podclip } from '../api/types.gen';
 import { Podcast } from '../types';
 import SwipeableViews from 'react-swipeable-views';
 import PodcastCard from './PodcastCard';
+import { getApiBaseUrl } from '../utils/apiConfig';
 
 const VerticalSwipePlayer: React.FC = () => {
   const { token } = useAuth();
@@ -19,7 +20,7 @@ const VerticalSwipePlayer: React.FC = () => {
     if (!token) return;
     try {
       const response = await playlist({
-        baseUrl: 'http://localhost:18888/api',
+        baseUrl: getApiBaseUrl(),
         query: {
           seconds: 60 * 30,
         },
@@ -52,7 +53,7 @@ const VerticalSwipePlayer: React.FC = () => {
     if (!token) return;
     try {
       await playPodclip({
-        baseUrl: 'http://localhost:18888/api',
+        baseUrl: getApiBaseUrl(),
         path: {
           podclip_id: podcast.id,
         },
@@ -69,7 +70,7 @@ const VerticalSwipePlayer: React.FC = () => {
     if (!token) return;
     try {
       await skipPodclip({
-        baseUrl: 'http://localhost:18888/api',
+        baseUrl: getApiBaseUrl(),
         path: {
           podclip_id: podcast.id,
         },

@@ -9,6 +9,7 @@ import { playlist, playPodclip, skipPodclip } from "../api/services.gen";
 import { Podclip } from "../api/types.gen";
 import { Podcast } from "../types";
 import { useAuth } from "../contexts/AuthContext";
+import { getApiBaseUrl } from '../utils/apiConfig';
 
 const HomePage: React.FC = () => {
   const { userEmail, token } = useAuth();
@@ -22,7 +23,7 @@ const HomePage: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await playlist({
-        baseUrl: "http://localhost:18888/api",
+        baseUrl: getApiBaseUrl(),
         query: {
           seconds: 60 * 30,
         },
@@ -73,7 +74,7 @@ const HomePage: React.FC = () => {
   const markPodcastAsPlayed = async (podcast: Podcast) => {
     try {
       await playPodclip({
-        baseUrl: "http://localhost:18888/api",
+        baseUrl: getApiBaseUrl(),
         path: {
           podclip_id: podcast.id,
         },
@@ -89,7 +90,7 @@ const HomePage: React.FC = () => {
   const markPodcastAsSkipped = async (podcast: Podcast, skipTime: number) => {
     try {
       await skipPodclip({
-        baseUrl: "http://localhost:18888/api",
+        baseUrl: getApiBaseUrl(),
         path: {
           podclip_id: podcast.id,
         },

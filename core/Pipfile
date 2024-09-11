@@ -26,6 +26,7 @@ secp256k1 = "*"
 alembic = "*"
 typing-extensions = "*"
 pgvector = "*"
+cryptography = "*"
 
 [dev-packages]
 mypy = "*"

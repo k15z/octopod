@@ -1,5 +1,6 @@
 from typing import Literal, Optional
 from uuid import UUID
+from random import shuffle
 
 import boto3
 from botocore.config import Config as BotocoreConfig
@@ -39,6 +40,20 @@ from octopod.worker import tasks
 from octopod.nwc import send_to_uma  # type: ignore
 
 router = APIRouter(prefix="/content", tags=["content"])
+
+
+def partial_shuffle(lst: list):
+    """Partially shuffle the data.
+
+    For each window of 5 elements, shuffle the elements within the window.
+    """
+    arr = []
+    for i in range(0, len(lst), 5):
+        x = lst[i : i + 5]
+        shuffle(x)
+        arr.extend(x)
+    lst.clear()
+    lst.extend(arr)
 
 
 @router.get("/podcast")
@@ -394,10 +409,11 @@ async def playlist(
     token: TokenData = Depends(decode_user_token),
     db: AsyncSession = Depends(get_db),
 ) -> MakePlaylistResponse:
-    recent_plays = (
+    recent_plays = list(
         (
             await db.execute(
                 select(PlayEvent)
+                .options(selectinload(PlayEvent.podclip))
                 .where(PlayEvent.user_id == token.id)
                 .order_by(PlayEvent.created_at.desc())
                 .limit(10)
@@ -406,40 +422,85 @@ async def playlist(
         .scalars()
         .all()
     )
+    recent_skips = list(
+        (
+            await db.execute(
+                select(SkipEvent)
+                .options(selectinload(SkipEvent.podclip))
+                .where(SkipEvent.user_id == token.id)
+                .order_by(SkipEvent.created_at.desc())
+                .limit(10)
+            )
+        )
+        .scalars()
+        .all()
+    )
     cf = ContentFilter()
-    for play in recent_plays:
-        await db.refresh(play, ["podclip"])
+    for play in recent_plays + recent_skips:
         if play.podclip:
             cf.add(play.podclip)
     if recent_plays:
         # User has recent plays, get content-based recommendations.
         query = """
-        WITH target_podclips AS (
+        WITH positive_podclips AS (
             SELECT
-                *
-            FROM podclip
-            WHERE podclip.id = ANY(:values)
-        ), cross_scores AS (
+                podclip.id as id,
+                embedding
+            FROM play_event
+            JOIN podclip ON play_event.podclip_id = podclip.id
+            WHERE play_event.user_id = :user_id
+            ORDER BY play_event.created_at DESC
+            LIMIT 10
+        ), negative_podclips AS (
             SELECT
-                podclip.id AS podclip_id, l1_distance(podclip.embedding, target_podclips.embedding) AS score
+                podclip.id as id,
+                embedding
+            FROM skip_event
+            JOIN podclip ON skip_event.podclip_id = podclip.id
+            WHERE skip_event.user_id = :user_id
+            ORDER BY skip_event.created_at DESC
+            LIMIT 10
+        ), cross_scores_positive AS (
+            SELECT
+                podclip.id AS podclip_id, 
+                l1_distance(podclip.embedding, positive_podclips.embedding) AS score
             FROM podclip
-            CROSS JOIN target_podclips
-            WHERE podclip.id != target_podclips.id
-        ), podclip_ranking AS (
+            CROSS JOIN positive_podclips
+            WHERE podclip.id != positive_podclips.id
+        ), podclip_ranking_positive AS (
             SELECT 
                 podclip_id,
-                MIN(cross_scores.score) AS score
-            FROM cross_scores
+                MIN(cross_scores_positive.score) AS score
+            FROM cross_scores_positive
+            GROUP BY podclip_id
+        ), cross_scores_negative AS (
+            SELECT
+                podclip.id AS podclip_id, 
+                -l1_distance(podclip.embedding, negative_podclips.embedding) AS score
+            FROM podclip
+            CROSS JOIN negative_podclips
+            WHERE podclip.id != negative_podclips.id
+        ), podclip_ranking_negative AS (
+            SELECT 
+                podclip_id,
+                MIN(cross_scores_negative.score) AS score
+            FROM cross_scores_negative
+            GROUP BY podclip_id
+        ), podclip_ranking AS (
+            SELECT
+                podclip_id,
+                SUM(score) AS score
+            FROM (
+                SELECT * FROM podclip_ranking_positive
+                UNION ALL
+                SELECT * FROM podclip_ranking_negative
+            ) as x
             GROUP BY podclip_id
         )
-        
+
         SELECT podclip_id, score FROM podclip_ranking ORDER BY score ASC LIMIT 100
         """
-        ranking = (
-            await db.execute(
-                text(query), {"values": [x.podclip_id for x in recent_plays]}
-            )
-        ).fetchall()
+        ranking = (await db.execute(text(query), {"user_id": token.id})).fetchall()
         if not ranking:
             return MakePlaylistResponse(duration=0, results=[])
 
@@ -454,7 +515,7 @@ async def playlist(
         )
         podclips = result.scalars().all()  # Sort to match selected_podclip_ids
         podclips = list(sorted(podclips, key=lambda x: select_ids.index(x.id)))
-        print(podclips[:10])
+        partial_shuffle(podclips)
 
     else:
         # No recent plays, just get the most popular podcasts.

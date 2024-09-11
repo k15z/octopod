@@ -36,7 +36,7 @@ from octopod.models import (
 )
 from octopod.queue import worker_queue
 from octopod.worker import tasks
-from octopod.nwc import send_to_uma
+from octopod.nwc import send_to_uma  # type: ignore
 
 router = APIRouter(prefix="/content", tags=["content"])
 
@@ -305,6 +305,7 @@ async def tip_podclip(
 
     try:
         user = (await db.execute(select(User).where(User.id == token.id))).scalar()
+        assert user is not None
         nwc_response = await send_to_uma(
             user.nwc_string, podclip.podcast.creator.uma_address, amount
         )
@@ -355,6 +356,7 @@ async def play_podclip(
     amount = int(podclip.duration)  # 1 sat per second
     try:
         user = (await db.execute(select(User).where(User.id == token.id))).scalar()
+        assert user is not None
         nwc_response = await send_to_uma(
             user.nwc_string, podclip.podcast.creator.uma_address, amount
         )

@@ -6,5 +6,6 @@ export type UpdateUserRequest = {
     first_name: (string | null);
     last_name: (string | null);
     picture_url: (string | null);
+    nwc_string: (string | null);
 };
 

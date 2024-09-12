@@ -4,7 +4,9 @@
 /* eslint-disable */
 import type { Body_creator_token } from '../models/Body_creator_token';
 import type { CreatorProfile } from '../models/CreatorProfile';
+import type { DashboardReponse } from '../models/DashboardReponse';
 import type { PaymentResponse } from '../models/PaymentResponse';
+import type { PodcastAnalytics } from '../models/PodcastAnalytics';
 import type { RegisterCreatorRequest } from '../models/RegisterCreatorRequest';
 import type { Token } from '../models/Token';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -69,6 +71,37 @@ export class CreatorService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/creator/payments',
+        });
+    }
+    /**
+     * Creator Dashboard
+     * @returns DashboardReponse Successful Response
+     * @throws ApiError
+     */
+    public static creatorDashboard(): CancelablePromise<DashboardReponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/creator/dashboard',
+        });
+    }
+    /**
+     * Podcast Breakdown
+     * @param podcastId
+     * @returns PodcastAnalytics Successful Response
+     * @throws ApiError
+     */
+    public static podcastBreakdown(
+        podcastId: string,
+    ): CancelablePromise<PodcastAnalytics> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/creator/podcast/{podcast_id}',
+            path: {
+                'podcast_id': podcastId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 }

@@ -3,12 +3,12 @@
         <v-navigation-drawer theme="dark" :rail="isRail" permanent @update:rail="handleRailUpdate">
             <template v-slot:prepend>
                 <template v-if="profile">
-                    <v-list-item style="" to="/profile" lines="two"
+                    <v-list-item class="pa-4" style="" to="/profile" lines="one"
                         prepend-avatar="https://randomuser.me/api/portraits/men/42.jpg" :subtitle="profile.uma_address"
                         :title="profile.name"></v-list-item>
                 </template>
                 <template v-else>
-                    <v-list-item style="" to="/profile" lines="two" subtitle="..." title="..."></v-list-item>
+                    <v-list-item class="pa-4" style="" to="/profile" lines="one" subtitle="..." title="..."></v-list-item>
                 </template>
             </template>
 

@@ -222,7 +222,7 @@ async def creator_dashboard(
                 .join(PlayEvent, PlayEvent.podclip_id == PodclipModel.id)
                 .group_by(PodclipModel.id)
                 .order_by(func.count().desc())
-                .limit(10)
+                .limit(5)
             )
         )
         .scalars()

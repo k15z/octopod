@@ -80,6 +80,7 @@ async def user_profile(
         picture_url=user.picture_url,
     )
 
+
 @router.post("/profile")
 async def update_user_profile(
     request: UpdateUserRequest,
@@ -108,6 +109,7 @@ async def update_user_profile(
         last_name=user.last_name,
         picture_url=user.picture_url,
     )
+
 
 @router.get("/statistics")
 async def user_statistics(
@@ -166,19 +168,24 @@ async def user_statistics(
     GROUP BY creator_id, creator.name
     """
     result = (await db.execute(text(query), {"user_id": token.id})).fetchall()
-    creator_amounts = [
-        CreatorAmount(
-            creator=row[1],
-            amount=row[2],
-            cover_url=(
-                await db.execute(select(Podcast).where(Podcast.creator_id == row[0]))
-            )
+    creator_amounts = []
+    for row in result:
+        if row is None:
+            continue
+        example = (
+            (await db.execute(select(Podcast).where(Podcast.creator_id == row[0])))
             .scalars()
             .first()
-            .cover_url,
         )
-        for row in result
-    ]
+        if example is None or example.cover_url is None:
+            continue
+        creator_amounts.append(
+            CreatorAmount(
+                creator=row[1],
+                amount=row[2],
+                cover_url=example.cover_url,
+            )
+        )
 
     query = """
     SELECT

@@ -11,10 +11,12 @@ class UserProfile(BaseModel):
     last_name: str
     picture_url: Optional[str]
 
+
 class UpdateUserRequest(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     picture_url: Optional[str]
+
 
 class CreateUserRequest(BaseModel):
     email: str

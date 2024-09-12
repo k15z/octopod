@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { playlist, playPodclip, skipPodclip } from '../api/services.gen';
 import { Podclip } from '../api/types.gen';
@@ -7,6 +7,7 @@ import { Podcast } from '../types';
 import SwipeableViews from 'react-swipeable-views';
 import PodcastCard from './PodcastCard';
 import { getApiBaseUrl } from '../utils/apiConfig';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const VerticalSwipePlayer: React.FC = () => {
   const { token } = useAuth();
@@ -137,7 +138,38 @@ const VerticalSwipePlayer: React.FC = () => {
   }, [handleKeyDown]);
 
   return (
-    <Box sx={{ height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <Box sx={{ height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative' }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 60,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 16px',
+          zIndex: 1000,
+        }}
+      >
+        <Box sx={{ width: 40 }} /> {/* Placeholder for balance */}
+        <Box
+          component="img"
+          src="/octopod_logo.svg"
+          alt="Octopod Logo"
+        />
+        <IconButton
+          sx={{
+            color: 'white',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            },
+          }}
+        >
+          <AccountCircleIcon />
+        </IconButton>
+      </Box>
       <SwipeableViews
         axis="y"
         index={currentIndex}

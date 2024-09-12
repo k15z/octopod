@@ -4,6 +4,7 @@ import requests
 from redis import Redis
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from octopod.config import config
 from octopod.core.content.router import router as content_router
@@ -28,18 +29,23 @@ app.include_router(content_router)
 app.include_router(creator_router)
 app.include_router(user_router)
 
+
+class BTCPrice(BaseModel):
+    USD: float
+
+
 @app.get("/btc_price")
-def btc_price():
-    if btc_price := redis.get("btc_price"):
-        return json.loads(btc_price)
+def btc_price() -> BTCPrice:
+    if data := redis.get("btc_price"):
+        return BTCPrice(**json.loads(data))  # type: ignore
 
     data = requests.get("https://api.coindesk.com/v1/bpi/currentprice.json").json()
-    result = {
-        "USD": data["bpi"]["USD"]["rate_float"],
-    }
+    result = BTCPrice(
+        USD=data["bpi"]["USD"]["rate_float"],
+    )
     redis.set(
         "btc_price",
-        json.dumps(result),
+        result.model_dump_json(),
         ex=60,
     )
     return result

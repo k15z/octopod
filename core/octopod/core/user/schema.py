@@ -26,6 +26,7 @@ class RegisterUserRequest(BaseModel):
 class CreatorAmount(BaseModel):
     creator: str
     amount: int
+    cover_url: str
 
 
 class UserStatistics(BaseModel):

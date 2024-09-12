@@ -18,7 +18,7 @@ from octopod.core.user.schema import (
     UserStatistics,
     CreatorAmount,
 )
-from octopod.models import User
+from octopod.models import User, Podcast
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -121,18 +121,20 @@ async def user_statistics(
 
     query = """
     SELECT
+        creator_id,
         creator.name,
         SUM(amount) as amount
     FROM payment
     JOIN creator ON payment.creator_id = creator.id
     WHERE user_id = :user_id
-    GROUP BY creator.name
+    GROUP BY creator_id, creator.name
     """
     result = (await db.execute(text(query), {"user_id": token.id})).fetchall()
     creator_amounts = [
         CreatorAmount(
-            creator=row[0],
-            amount=row[1],
+            creator=row[1],
+            amount=row[2],
+            cover_url=(await db.execute(select(Podcast).where(Podcast.creator_id == row[0]))).scalars().first().cover_url,
         )
         for row in result
     ]

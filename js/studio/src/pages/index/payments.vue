@@ -1,5 +1,5 @@
 <template>
-    <v-container>
+    <v-container class="content">
         <v-row>
             <v-col cols="12">
                 <h1>Payments</h1>
@@ -51,3 +51,10 @@ CreatorService.creatorPayments().then((res) => {
     is_loading.value = false;
 });
 </script>
+
+<style scoped>
+.content {
+    max-height: 100vh;
+    overflow-y: auto;
+}
+</style>

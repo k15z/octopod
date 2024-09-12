@@ -2,12 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type UserProfile = {
-    id: string;
-    email: string;
-    nwc_string: string;
-    first_name: string;
-    last_name: string;
+export type UpdateUserRequest = {
+    first_name: (string | null);
+    last_name: (string | null);
     picture_url: (string | null);
 };
 

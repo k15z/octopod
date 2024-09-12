@@ -10,6 +10,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { Body_creator_token } from './models/Body_creator_token';
 export type { Body_user_token } from './models/Body_user_token';
 export type { CreatePodcastRequest } from './models/CreatePodcastRequest';
+export type { CreatorAmount } from './models/CreatorAmount';
 export type { CreatorProfile } from './models/CreatorProfile';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { ListPodcastsResponse } from './models/ListPodcastsResponse';
@@ -24,7 +25,9 @@ export type { RegisterUserRequest } from './models/RegisterUserRequest';
 export type { Token } from './models/Token';
 export type { UpdatePodcastRequest } from './models/UpdatePodcastRequest';
 export type { UpdatePodclipRequest } from './models/UpdatePodclipRequest';
+export type { UpdateUserRequest } from './models/UpdateUserRequest';
 export type { UserProfile } from './models/UserProfile';
+export type { UserStatistics } from './models/UserStatistics';
 export type { ValidationError } from './models/ValidationError';
 
 export { ContentService } from './services/ContentService';

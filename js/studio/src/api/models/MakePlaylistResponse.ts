@@ -5,6 +5,7 @@
 import type { Podclip } from './Podclip';
 export type MakePlaylistResponse = {
     duration: number;
+    source: string;
     results: Array<Podclip>;
 };
 

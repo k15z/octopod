@@ -503,7 +503,7 @@ async def playlist(
         """
         ranking = (await db.execute(text(query), {"user_id": token.id})).fetchall()
         if not ranking:
-            return MakePlaylistResponse(duration=0, results=[])
+            return MakePlaylistResponse(duration=0, source="random", results=[])
 
         select_ids = [podclip_id for podclip_id, _ in ranking]
 

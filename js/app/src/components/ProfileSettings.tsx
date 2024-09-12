@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { usePlayerContext } from './MainLayout';
 import PodcastCard from './PodcastCard';
-import { userStatistics } from '../api/services.gen';
+import { btcPrice, userStatistics } from '../api/services.gen';
 import { getApiBaseUrl } from '../utils/apiConfig';
 
 interface UserStats {
@@ -21,11 +21,32 @@ const ProfileSettings: React.FC = () => {
   const navigate = useNavigate();
   const { podcasts, currentIndex, isPlaying, setIsPlaying, handleProgressChange } = usePlayerContext();
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [usdConversionRate, setUsdConversionRate] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const fetchUsdConversionRate = async () => {
+      try {
+        const response = await btcPrice({
+          baseUrl: getApiBaseUrl(),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.data) {
+          setUsdConversionRate(response.data.USD);
+        }
+      } catch (error) {
+        console.error("Error fetching USD conversion rate:", error);
+      }
+    };
+
+    fetchUsdConversionRate();
+  }, [token]);
+
+  useEffect(() => {
     const fetchUserStats = async () => {
-      if (!token) return;
+      if (!token || !usdConversionRate) return;
       try {
         const response = await userStatistics({
           baseUrl: getApiBaseUrl(),
@@ -35,7 +56,7 @@ const ProfileSettings: React.FC = () => {
         });
         if (response.data) {
           setStats({
-            amountPaid: response.data.lifetime_spend,
+            amountPaid: satsToUsd(response.data.lifetime_spend, usdConversionRate),
             totalTips: response.data.num_tips,
             creatorsTipped: response.data.creator_amounts.length,
             hoursListened: response.data.seconds_listened / 3600,
@@ -50,7 +71,7 @@ const ProfileSettings: React.FC = () => {
     };
 
     fetchUserStats();
-  }, [token]);
+  }, [token, usdConversionRate]);
 
   const handleLogout = () => {
     logout();
@@ -112,7 +133,7 @@ const ProfileSettings: React.FC = () => {
               }}>
                 <Box sx={{ mr: '30px' }}>
                   <Typography sx={{ fontWeight: 'bold', fontSize: '15px' }}>
-                    {Math.round(stats.amountPaid)} SATs
+                    ${stats.amountPaid.toFixed(2)}
                   </Typography>
                   <Typography sx={{ fontSize: '11px', opacity: 0.6 }}>
                     To Creators
@@ -161,5 +182,9 @@ const ProfileSettings: React.FC = () => {
     </Box>
   );
 };
+
+const satsToUsd = (sats: number, conversionRate: number) => {
+    return sats * conversionRate / 100000000;
+}
 
 export default ProfileSettings;

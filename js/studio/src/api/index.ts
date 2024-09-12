@@ -9,6 +9,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { Body_creator_token } from './models/Body_creator_token';
 export type { Body_user_token } from './models/Body_user_token';
+export type { BTCPrice } from './models/BTCPrice';
 export type { CreatePodcastRequest } from './models/CreatePodcastRequest';
 export type { CreatorAmount } from './models/CreatorAmount';
 export type { CreatorProfile } from './models/CreatorProfile';
@@ -32,4 +33,5 @@ export type { ValidationError } from './models/ValidationError';
 
 export { ContentService } from './services/ContentService';
 export { CreatorService } from './services/CreatorService';
+export { DefaultService } from './services/DefaultService';
 export { UserService } from './services/UserService';

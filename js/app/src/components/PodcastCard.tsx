@@ -9,28 +9,20 @@ import {
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { Podcast } from "../types";
 import { keyframes } from "@mui/system";
+import { usePlayerContext } from "./MainLayout";
 
 interface PodcastCardProps {
   podcast: Podcast;
   isActive: boolean;
   isPlaying: boolean;
   onTogglePlay: () => void;
-  onEnded: () => void;
   onProgressChange: (currentTime: number, duration: number) => void;
 }
 
 const getRandomGradient = () => {
   const colors = [
-    "#FF6B6B",
-    "#4ECDC4",
-    "#45B7D1",
-    "#FFA07A",
-    "#98D8C8",
-    "#F67280",
-    "#C06C84",
-    "#6C5B7B",
-    "#355C7D",
-    "#F8B195",
+    "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8",
+    "#F67280", "#C06C84", "#6C5B7B", "#355C7D", "#F8B195"
   ];
   const color1 = colors[Math.floor(Math.random() * colors.length)];
   const color2 = colors[Math.floor(Math.random() * colors.length)];
@@ -47,50 +39,19 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
   isActive,
   isPlaying,
   onTogglePlay,
-  onEnded,
   onProgressChange
 }) => {
   const [progress, setProgress] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const titleRef = useRef<HTMLDivElement>(null);
-  const [gradient] = useState(getRandomGradient());
+  const [gradient] = useState(getRandomGradient);
+  const { currentTime, duration, audioRef } = usePlayerContext();
 
   useEffect(() => {
-    if (isActive && isPlaying) {
-      audioRef.current?.play();
-    } else {
-      audioRef.current?.pause();
+    if (isActive && audioRef.current) {
+      setProgress((currentTime / duration) * 100);
     }
-  }, [isActive, isPlaying]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const updateProgress = () => {
-      const duration = audio.duration;
-      const currentTime = audio.currentTime;
-      if (duration > 0) {
-        setProgress((currentTime / duration) * 100);
-        if (isActive) {
-          onProgressChange(currentTime, duration);
-        }
-      }
-    };
-
-    const handleEnded = () => {
-        onEnded();
-    };
-
-    audio.addEventListener("timeupdate", updateProgress);
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", updateProgress);
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [isActive, onEnded, onProgressChange]);
+  }, [isActive, currentTime, duration, audioRef]);
 
   useEffect(() => {
     if (titleRef.current) {
@@ -98,6 +59,12 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
       setShouldAnimate(isOverflowing);
     }
   }, [podcast.title]);
+
+  useEffect(() => {
+    if (isActive) {
+      onProgressChange(currentTime, duration);
+    }
+  }, [isActive, currentTime, duration, onProgressChange]);
 
   return (
     <Box
@@ -114,6 +81,11 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
         cursor: "pointer",
         position: "relative",
         padding: 3,
+        outline: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        '&:focus': {
+          outline: 'none',
+        },
       }}
     >
       {!isPlaying && (
@@ -196,7 +168,6 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
           }}
         />
       </Box>
-      <audio ref={audioRef} src={podcast.url} />
     </Box>
   );
 };

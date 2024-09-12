@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import LoginPage from './components/LoginPage';
 import SignUpPage from './components/SignUpPage';
-import HomePage from './components/HomePage';
 import VerticalSwipePlayer from './components/VerticalSwipePlayer';
+import ProfileSettings from './components/ProfileSettings';
+import MainLayout from './components/MainLayout';
 import PrivateRoute from './components/PrivateRoute';
 import { useAuth } from './contexts/AuthContext';
 
@@ -46,18 +47,13 @@ const App: React.FC = () => {
             path="/"
             element={
               <PrivateRoute>
-                <VerticalSwipePlayer />
+                <MainLayout />
               </PrivateRoute>
             }
-          />
-          <Route
-            path="/old-player"
-            element={
-              <PrivateRoute>
-                <HomePage />
-              </PrivateRoute>
-            }
-          />
+          >
+            <Route index element={<VerticalSwipePlayer />} />
+            <Route path="profile" element={<ProfileSettings />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

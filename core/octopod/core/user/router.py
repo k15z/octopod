@@ -17,6 +17,7 @@ from octopod.core.user.schema import (
     RegisterUserRequest,
     UserStatistics,
     CreatorAmount,
+    UpdateUserRequest,
 )
 from octopod.models import User, Podcast
 
@@ -70,8 +71,43 @@ async def user_profile(
             status_code=401,
             detail="Could not validate credentials",
         )
-    return UserProfile(id=user.id, email=user.email, nwc_string=user.nwc_string)
+    return UserProfile(
+        id=user.id,
+        email=user.email,
+        nwc_string=user.nwc_string,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        picture_url=user.picture_url,
+    )
 
+@router.post("/profile")
+async def update_user_profile(
+    request: UpdateUserRequest,
+    token: TokenData = Depends(decode_user_token),
+    db: AsyncSession = Depends(get_db),
+) -> UserProfile:
+    result = await db.execute(select(User).where(User.id == token.id))
+    user = result.scalar()
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Could not validate credentials",
+        )
+    if request.first_name is not None:
+        user.first_name = request.first_name
+    if request.last_name is not None:
+        user.last_name = request.last_name
+    if request.picture_url is not None:
+        user.picture_url = request.picture_url
+    await db.commit()
+    return UserProfile(
+        id=user.id,
+        email=user.email,
+        nwc_string=user.nwc_string,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        picture_url=user.picture_url,
+    )
 
 @router.get("/statistics")
 async def user_statistics(
@@ -134,7 +170,12 @@ async def user_statistics(
         CreatorAmount(
             creator=row[1],
             amount=row[2],
-            cover_url=(await db.execute(select(Podcast).where(Podcast.creator_id == row[0]))).scalars().first().cover_url,
+            cover_url=(
+                await db.execute(select(Podcast).where(Podcast.creator_id == row[0]))
+            )
+            .scalars()
+            .first()
+            .cover_url,
         )
         for row in result
     ]

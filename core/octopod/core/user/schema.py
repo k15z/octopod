@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -7,7 +7,14 @@ class UserProfile(BaseModel):
     id: UUID
     email: str
     nwc_string: str
+    first_name: str
+    last_name: str
+    picture_url: Optional[str]
 
+class UpdateUserRequest(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    picture_url: Optional[str]
 
 class CreateUserRequest(BaseModel):
     email: str

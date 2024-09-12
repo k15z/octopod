@@ -41,8 +41,11 @@ class User(Base):
 
     __tablename__ = "user"
 
+    first_name: Mapped[str] = mapped_column()
+    last_name: Mapped[str] = mapped_column()
     email: Mapped[str] = mapped_column(unique=True)
     nwc_string: Mapped[str] = mapped_column()
+    picture_url: Mapped[Optional[str]] = mapped_column()
 
 
 class Creator(Base):

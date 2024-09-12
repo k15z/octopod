@@ -114,7 +114,7 @@ async def user_statistics(
     WHERE user_id = :user_id
     """
     row = (await db.execute(text(query), {"user_id": token.id})).fetchone()
-    if result is None:
+    if row is None:
         seconds_saved = num_plays = 0
     else:
         seconds_saved, num_plays = int(row[1]), row[0]

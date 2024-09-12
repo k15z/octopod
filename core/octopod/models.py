@@ -126,6 +126,7 @@ class TipEvent(Base):
     user: Mapped["User"] = relationship("User", backref="tip_events")
     podcast: Mapped["Podcast"] = relationship("Podcast", backref="tip_events")
     podclip: Mapped[Optional["Podclip"]] = relationship("Podclip", backref="tip_events")
+    payment: Mapped[Optional["Payment"]] = relationship("Payment", backref="tip_events")
 
 
 class PlayEvent(Base):
@@ -141,6 +142,9 @@ class PlayEvent(Base):
     podcast: Mapped["Podcast"] = relationship("Podcast", backref="play_events")
     podclip: Mapped[Optional["Podclip"]] = relationship(
         "Podclip", backref="play_events"
+    )
+    payment: Mapped[Optional["Payment"]] = relationship(
+        "Payment", backref="play_events"
     )
 
 

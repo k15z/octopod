@@ -96,6 +96,7 @@ async def handle_podcast(podcast_id: UUID):
                 int(podclip.start_time * 1000) : int(podclip.end_time * 1000)
             ].fade_in(2000)
             sound = intro + sound
+            sound = sound.fade_out(5000)
 
             with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
                 sound.export(temp_file.name, format="mp3")

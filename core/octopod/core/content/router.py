@@ -446,12 +446,21 @@ async def playlist(
         WITH positive_podclips AS (
             SELECT
                 podclip.id as id,
+                tip_event.created_at,
+                embedding
+            FROM tip_event
+            JOIN podclip ON tip_event.podclip_id = podclip.id
+            WHERE tip_event.user_id = :user_id
+            UNION ALL
+            SELECT
+                podclip.id as id,
+                play_event.created_at,
                 embedding
             FROM play_event
             JOIN podclip ON play_event.podclip_id = podclip.id
             WHERE play_event.user_id = :user_id
-            ORDER BY play_event.created_at DESC
-            LIMIT 10
+            ORDER BY created_at DESC
+            LIMIT 20
         ), negative_podclips AS (
             SELECT
                 podclip.id as id,
@@ -541,7 +550,6 @@ async def playlist(
     for podclip in podclips:
         if not cf.okay(podclip):
             continue
-        print(podclip.podcast)
         results.append(
             Podclip(
                 id=podclip.id,

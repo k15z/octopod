@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { usePlayerContext } from './MainLayout';
 import PodcastCard from './PodcastCard';
-import { btcPrice, userStatistics } from '../api/services.gen';
+import { btcPrice, userStatistics, userProfile } from '../api/services.gen';
 import { getApiBaseUrl } from '../utils/apiConfig';
 
 interface UserStats {
@@ -16,13 +16,52 @@ interface UserStats {
   hoursSaved: number;
 }
 
+interface UserProfileInfo {
+  email: string;
+  fullName: string;
+  imageUrl: string | null;
+  // Add any other fields that are returned by the userProfile function
+}
+
 const ProfileSettings: React.FC = () => {
   const { userEmail, logout, token } = useAuth();
   const navigate = useNavigate();
   const { podcasts, currentIndex, isPlaying, setIsPlaying, handleProgressChange } = usePlayerContext();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [usdConversionRate, setUsdConversionRate] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [areStatsLoading, setAreStatsLoading] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [userProfileInfo, setUserProfileInfo] = useState<UserProfileInfo | null>(null);
+  const isLoading = isProfileLoading || areStatsLoading;
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!token) return;
+      try {
+        setIsProfileLoading(true);
+        const response = await userProfile({
+          baseUrl: getApiBaseUrl(),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.data) {
+          const userData: UserProfileInfo = {
+            email: response.data.email,
+            fullName: response.data.first_name + " " + response.data.last_name,
+            imageUrl: response.data.picture_url,
+          };
+          setUserProfileInfo(userData);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      } finally {
+        setIsProfileLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [token]);
 
   useEffect(() => {
     const fetchUsdConversionRate = async () => {
@@ -48,6 +87,7 @@ const ProfileSettings: React.FC = () => {
     const fetchUserStats = async () => {
       if (!token || !usdConversionRate) return;
       try {
+        setAreStatsLoading(true);
         const response = await userStatistics({
           baseUrl: getApiBaseUrl(),
           headers: {
@@ -66,7 +106,7 @@ const ProfileSettings: React.FC = () => {
       } catch (error) {
         console.error("Error fetching user statistics:", error);
       } finally {
-        setIsLoading(false);
+        setAreStatsLoading(false);
       }
     };
 
@@ -107,19 +147,44 @@ const ProfileSettings: React.FC = () => {
           </Box>
         ) : (
           <>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 6 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', mt: 6 }}>
               <Avatar
-                src="/placeholder-avatar.png" // Replace with actual user avatar when available
+                src={userProfileInfo?.imageUrl || "/placeholder-avatar.png"}
                 alt="User Avatar"
                 sx={{ width: 80, height: 80, mb: 2 }}
               />
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                {userEmail}
+              <Typography variant="h4" sx={{ mb: 1 }}>
+                {userProfileInfo?.fullName ?? userEmail}
               </Typography>
               {stats && (
-                <Typography variant="caption" color="text.secondary">
-                  {stats.hoursListened.toFixed(1)} hours listened • {stats.hoursSaved.toFixed(1)} hours saved
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box
+                    component="img"
+                    src="/headphones.svg"
+                    alt="Headphones Icon"
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      mr: 1,
+                    }}
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ mr: 2 }}>
+                    {stats.hoursListened.toFixed(1)} hours
+                  </Typography>
+                  <Box
+                    component="img"
+                    src="/smartwatch.svg"
+                    alt="Smartwatch Icon"
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      mr: 1,
+                    }}
+                  />
+                  <Typography variant="caption" color="text.secondary">
+                    {stats.hoursSaved.toFixed(1)} hours saved
+                  </Typography>
+                </Box>
               )}
             </Box>
 
@@ -128,30 +193,29 @@ const ProfileSettings: React.FC = () => {
                 display: 'flex', 
                 justifyContent: 'flex-start', 
                 mt: 4, 
-                mb: 2,
-                pl: 3,
+                mb: 2
               }}>
                 <Box sx={{ mr: '30px' }}>
-                  <Typography sx={{ fontWeight: 'bold', fontSize: '15px' }}>
+                  <Typography sx={{ fontWeight: 'bold', fontSize: '28px' }}>
                     ${stats.amountPaid.toFixed(2)}
                   </Typography>
-                  <Typography sx={{ fontSize: '11px', opacity: 0.6 }}>
+                  <Typography sx={{ fontSize: '15px', opacity: 0.6 }}>
                     To Creators
                   </Typography>
                 </Box>
                 <Box sx={{ mr: '30px' }}>
-                  <Typography sx={{ fontWeight: 'bold', fontSize: '15px' }}>
+                  <Typography sx={{ fontWeight: 'bold', fontSize: '28px' }}>
                     {stats.totalTips}
                   </Typography>
-                  <Typography sx={{ fontSize: '11px', opacity: 0.6 }}>
+                  <Typography sx={{ fontSize: '15px', opacity: 0.6 }}>
                     Tips
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography sx={{ fontWeight: 'bold', fontSize: '15px' }}>
+                  <Typography sx={{ fontWeight: 'bold', fontSize: '28px' }}>
                     {stats.creatorsTipped}
                   </Typography>
-                  <Typography sx={{ fontSize: '11px', opacity: 0.6 }}>
+                  <Typography sx={{ fontSize: '15px', opacity: 0.6 }}>
                     Creators
                   </Typography>
                 </Box>

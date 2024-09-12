@@ -25,7 +25,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Circular", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
   },
 });
 

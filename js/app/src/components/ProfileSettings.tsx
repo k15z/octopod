@@ -1,12 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, IconButton, Avatar, CircularProgress } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { usePlayerContext } from './MainLayout';
-import PodcastCard from './PodcastCard';
-import { btcPrice, userStatistics, userProfile } from '../api/services.gen';
-import { getApiBaseUrl } from '../utils/apiConfig';
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  Avatar,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { usePlayerContext } from "./MainLayout";
+import PodcastCard from "./PodcastCard";
+import { btcPrice, userStatistics, userProfile } from "../api/services.gen";
+import { getApiBaseUrl } from "../utils/apiConfig";
 
 interface UserStats {
   amountPaid: number;
@@ -14,6 +25,11 @@ interface UserStats {
   creatorsTipped: number;
   hoursListened: number;
   hoursSaved: number;
+  creatorAmounts: Array<{
+    name: string;
+    amount: number;
+    coverUrl: string;
+  }>;
 }
 
 interface UserProfileInfo {
@@ -26,12 +42,21 @@ interface UserProfileInfo {
 const ProfileSettings: React.FC = () => {
   const { userEmail, logout, token } = useAuth();
   const navigate = useNavigate();
-  const { podcasts, currentIndex, isPlaying, setIsPlaying, handleProgressChange } = usePlayerContext();
+  const {
+    podcasts,
+    currentIndex,
+    isPlaying,
+    setIsPlaying,
+    handleProgressChange,
+  } = usePlayerContext();
   const [stats, setStats] = useState<UserStats | null>(null);
-  const [usdConversionRate, setUsdConversionRate] = useState<number | null>(null);
+  const [usdConversionRate, setUsdConversionRate] = useState<number | null>(
+    null
+  );
   const [areStatsLoading, setAreStatsLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
-  const [userProfileInfo, setUserProfileInfo] = useState<UserProfileInfo | null>(null);
+  const [userProfileInfo, setUserProfileInfo] =
+    useState<UserProfileInfo | null>(null);
   const isLoading = isProfileLoading || areStatsLoading;
 
   useEffect(() => {
@@ -96,11 +121,19 @@ const ProfileSettings: React.FC = () => {
         });
         if (response.data) {
           setStats({
-            amountPaid: satsToUsd(response.data.lifetime_spend, usdConversionRate),
+            amountPaid: satsToUsd(
+              response.data.lifetime_spend,
+              usdConversionRate
+            ),
             totalTips: response.data.num_tips,
             creatorsTipped: response.data.creator_amounts.length,
             hoursListened: response.data.seconds_listened / 3600,
             hoursSaved: response.data.seconds_saved / 3600,
+            creatorAmounts: response.data.creator_amounts.map((creator) => ({
+              name: creator.creator,
+              amount: satsToUsd(creator.amount, usdConversionRate),
+              coverUrl: creator.cover_url,
+            })),
           });
         }
       } catch (error) {
@@ -115,39 +148,60 @@ const ProfileSettings: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
-    <Box sx={{ 
-      height: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      <Box sx={{ p: 3, flexGrow: 1, overflowY: 'auto' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <Box sx={{ p: 3, flexGrow: 1, overflowY: "auto" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
+        >
           <IconButton
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             sx={{
-              color: 'text.primary',
+              color: "text.primary",
             }}
           >
             <ArrowBackIcon />
           </IconButton>
-          <Button variant="outlined" color="secondary" onClick={handleLogout} size="small">
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleLogout}
+            size="small"
+          >
             Logout
           </Button>
         </Box>
-        
+
         {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "50vh",
+            }}
+          >
             <CircularProgress />
           </Box>
         ) : (
           <>
-            <Box sx={{ display: 'flex', flexDirection: 'column', mt: 6 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", mt: 6 }}>
               <Avatar
                 src={userProfileInfo?.imageUrl || "/placeholder-avatar.png"}
                 alt="User Avatar"
@@ -157,7 +211,7 @@ const ProfileSettings: React.FC = () => {
                 {userProfileInfo?.fullName ?? userEmail}
               </Typography>
               {stats && (
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
                   <Box
                     component="img"
                     src="/headphones.svg"
@@ -168,7 +222,11 @@ const ProfileSettings: React.FC = () => {
                       mr: 1,
                     }}
                   />
-                  <Typography variant="caption" color="text.secondary" sx={{ mr: 2 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mr: 2 }}
+                  >
                     {stats.hoursListened.toFixed(1)} hours
                   </Typography>
                   <Box
@@ -189,51 +247,98 @@ const ProfileSettings: React.FC = () => {
             </Box>
 
             {stats && (
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'flex-start', 
-                mt: 4, 
-                mb: 2
-              }}>
-                <Box sx={{ mr: '30px' }}>
-                  <Typography sx={{ fontWeight: 'bold', fontSize: '28px' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  mt: 4,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ mr: "30px" }}>
+                  <Typography sx={{ fontWeight: "bold", fontSize: "28px" }}>
                     ${stats.amountPaid.toFixed(2)}
                   </Typography>
-                  <Typography sx={{ fontSize: '15px', opacity: 0.6 }}>
+                  <Typography sx={{ fontSize: "15px", opacity: 0.6 }}>
                     To Creators
                   </Typography>
                 </Box>
-                <Box sx={{ mr: '30px' }}>
-                  <Typography sx={{ fontWeight: 'bold', fontSize: '28px' }}>
+                <Box sx={{ mr: "30px" }}>
+                  <Typography sx={{ fontWeight: "bold", fontSize: "28px" }}>
                     {stats.totalTips}
                   </Typography>
-                  <Typography sx={{ fontSize: '15px', opacity: 0.6 }}>
+                  <Typography sx={{ fontSize: "15px", opacity: 0.6 }}>
                     Tips
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography sx={{ fontWeight: 'bold', fontSize: '28px' }}>
+                  <Typography sx={{ fontWeight: "bold", fontSize: "28px" }}>
                     {stats.creatorsTipped}
                   </Typography>
-                  <Typography sx={{ fontSize: '15px', opacity: 0.6 }}>
+                  <Typography sx={{ fontSize: "15px", opacity: 0.6 }}>
                     Creators
                   </Typography>
                 </Box>
               </Box>
             )}
+
+            {stats && stats.creatorAmounts.length > 0 && (
+              <List sx={{ padding: 0 }}>
+                {stats.creatorAmounts.map((creator, index) => (
+                  <ListItem 
+                    key={index} 
+                    alignItems="flex-start" 
+                    sx={{ 
+                      pl: 0,
+                      borderBottom: '1px solid #1A1C1E',
+                      '&:last-child': {
+                        borderBottom: 'none'
+                      }
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Avatar 
+                        src={creator.coverUrl} 
+                        alt={creator.name} 
+                        sx={{ 
+                          borderRadius: '10%',  // This creates slightly rounded squares
+                          width: 50,  // Adjust size if needed
+                          height: 50,  // Adjust size if needed
+                          mr: 2
+                        }}
+                      />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography sx={{ fontSize: '17px' }}>
+                          {index + 1}. {creator.name}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography sx={{ fontSize: '15px', opacity: 0.6, ml: 2.2 }}>
+                          ${creator.amount.toFixed(2)}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
           </>
         )}
       </Box>
-      
+
       {podcasts[currentIndex] && (
-        <Box sx={{ 
-          width: '100%', 
-          height: 140, 
-          position: 'absolute', 
-          bottom: 0, 
-          left: 0, 
-          right: 0 
-        }}>
+        <Box
+          sx={{
+            width: "100%",
+            height: 140,
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        >
           <PodcastCard
             podcast={podcasts[currentIndex]}
             isActive={true}
@@ -248,7 +353,7 @@ const ProfileSettings: React.FC = () => {
 };
 
 const satsToUsd = (sats: number, conversionRate: number) => {
-    return sats * conversionRate / 100000000;
-}
+  return (sats * conversionRate) / 100000000;
+};
 
 export default ProfileSettings;

@@ -80,7 +80,7 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
     };
 
     const handleEnded = () => {
-      onEnded();
+        onEnded();
     };
 
     audio.addEventListener("timeupdate", updateProgress);

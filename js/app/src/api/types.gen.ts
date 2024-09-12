@@ -41,6 +41,11 @@ export type CreatePodcastRequest = {
     audio_url: string;
 };
 
+export type CreatorAmount = {
+    creator: string;
+    amount: number;
+};
+
 export type CreatorProfile = {
     name: string;
     email: string;
@@ -61,6 +66,7 @@ export type ListPodclipsResponse = {
 
 export type MakePlaylistResponse = {
     duration: number;
+    source: string;
     results: Array<Podclip>;
 };
 
@@ -197,6 +203,16 @@ export type UserProfile = {
     id: string;
     email: string;
     nwc_string: string;
+};
+
+export type UserStatistics = {
+    weekly_spend: number;
+    lifetime_spend: number;
+    seconds_listened: number;
+    seconds_saved: number;
+    num_tips: number;
+    num_plays: number;
+    creator_amounts: Array<CreatorAmount>;
 };
 
 export type ValidationError = {
@@ -399,3 +415,7 @@ export type UserTokenError = (HTTPValidationError);
 export type UserProfileResponse = (UserProfile);
 
 export type UserProfileError = unknown;
+
+export type UserStatisticsResponse = (UserStatistics);
+
+export type UserStatisticsError = unknown;

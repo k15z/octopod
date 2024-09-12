@@ -158,6 +158,22 @@ export const CreatePodcastRequestSchema = {
     title: 'CreatePodcastRequest'
 } as const;
 
+export const CreatorAmountSchema = {
+    properties: {
+        creator: {
+            type: 'string',
+            title: 'Creator'
+        },
+        amount: {
+            type: 'integer',
+            title: 'Amount'
+        }
+    },
+    type: 'object',
+    required: ['creator', 'amount'],
+    title: 'CreatorAmount'
+} as const;
+
 export const CreatorProfileSchema = {
     properties: {
         name: {
@@ -228,6 +244,10 @@ export const MakePlaylistResponseSchema = {
             type: 'integer',
             title: 'Duration'
         },
+        source: {
+            type: 'string',
+            title: 'Source'
+        },
         results: {
             items: {
                 '$ref': '#/components/schemas/Podclip'
@@ -237,7 +257,7 @@ export const MakePlaylistResponseSchema = {
         }
     },
     type: 'object',
-    required: ['duration', 'results'],
+    required: ['duration', 'source', 'results'],
     title: 'MakePlaylistResponse'
 } as const;
 
@@ -553,6 +573,45 @@ export const UserProfileSchema = {
     type: 'object',
     required: ['id', 'email', 'nwc_string'],
     title: 'UserProfile'
+} as const;
+
+export const UserStatisticsSchema = {
+    properties: {
+        weekly_spend: {
+            type: 'integer',
+            title: 'Weekly Spend'
+        },
+        lifetime_spend: {
+            type: 'integer',
+            title: 'Lifetime Spend'
+        },
+        seconds_listened: {
+            type: 'integer',
+            title: 'Seconds Listened'
+        },
+        seconds_saved: {
+            type: 'integer',
+            title: 'Seconds Saved'
+        },
+        num_tips: {
+            type: 'integer',
+            title: 'Num Tips'
+        },
+        num_plays: {
+            type: 'integer',
+            title: 'Num Plays'
+        },
+        creator_amounts: {
+            items: {
+                '$ref': '#/components/schemas/CreatorAmount'
+            },
+            type: 'array',
+            title: 'Creator Amounts'
+        }
+    },
+    type: 'object',
+    required: ['weekly_spend', 'lifetime_spend', 'seconds_listened', 'seconds_saved', 'num_tips', 'num_plays', 'creator_amounts'],
+    title: 'UserStatistics'
 } as const;
 
 export const ValidationErrorSchema = {

@@ -5,11 +5,16 @@ import {
   IconButton,
   Avatar,
   LinearProgress,
+  Snackbar,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import { Podcast } from "../types";
-import { keyframes } from "@mui/system";
+import { keyframes, styled } from "@mui/system";
 import { usePlayerContext } from "./MainLayout";
+import { tipPodclip } from "../api/services.gen";
+import { getApiBaseUrl } from "../utils/apiConfig";
+import { useAuth } from "../contexts/AuthContext";
 
 interface PodcastCardProps {
   podcast: Podcast;
@@ -34,6 +39,18 @@ const scrollAnimation = keyframes`
   50% { transform: translateX(calc(-100% + 300px)); }
 `;
 
+const flashAnimation = keyframes`
+  0% { background-color: inherit; }
+  50% { background-color: #4CAF50; }
+  100% { background-color: inherit; }
+`;
+
+const AnimatedIconButton = styled(IconButton)`
+  &.flash {
+    animation: ${flashAnimation} 0.5s;
+  }
+`;
+
 const PodcastCard: React.FC<PodcastCardProps> = ({
   podcast,
   isActive,
@@ -43,9 +60,13 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
 }) => {
   const [progress, setProgress] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [isFlashing, setIsFlashing] = useState(false);
+  const [isTipping, setIsTipping] = useState(false);
+  const [tipSuccess, setTipSuccess] = useState<boolean | null>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const [gradient] = useState(getRandomGradient);
   const { currentTime, duration, audioRef } = usePlayerContext();
+  const { token } = useAuth();
 
   useEffect(() => {
     if (isActive && audioRef.current) {
@@ -65,6 +86,34 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
       onProgressChange(currentTime, duration);
     }
   }, [isActive, currentTime, duration, onProgressChange]);
+
+  const handleTip = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setIsFlashing(true);
+    setIsTipping(true);
+
+    try {
+      const response = await tipPodclip({
+        baseUrl: getApiBaseUrl(),
+        path: { podclip_id: podcast.id },
+        query: { amount: 100 }, // You can adjust this amount or make it dynamic
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Assume success if we get a response (i.e., no error was thrown)
+      console.log("Tip successful:", response);
+      setTipSuccess(true);
+    } catch (error) {
+      console.error("Error tipping podcast:", error);
+      setTipSuccess(false);
+    } finally {
+      setIsTipping(false);
+      setTimeout(() => setIsFlashing(false), 500);
+      setTimeout(() => setTipSuccess(null), 3000); // Reset tip success state after 3 seconds
+    }
+  };
 
   return (
     <Box
@@ -152,6 +201,21 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
             {podcast.author}
           </Typography>
         </Box>
+        <AnimatedIconButton
+          onClick={handleTip}
+          className={isFlashing ? 'flash' : ''}
+          disabled={isTipping}
+          sx={{
+            color: "white",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.3)",
+            },
+            marginLeft: 1,
+          }}
+        >
+          <AttachMoneyIcon />
+        </AnimatedIconButton>
         <LinearProgress
           variant="determinate"
           value={progress}
@@ -168,6 +232,13 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
           }}
         />
       </Box>
+      <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        open={tipSuccess !== null}
+        autoHideDuration={3000}
+        onClose={() => setTipSuccess(null)}
+        message={tipSuccess ? "Tip sent successfully!" : "Failed to send tip. Please try again."}
+      />
     </Box>
   );
 };

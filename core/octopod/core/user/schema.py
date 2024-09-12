@@ -47,7 +47,7 @@ class UserStatistics(BaseModel):
     weekly_spend: int
     lifetime_spend: int
     seconds_listened: int
-    seconds_saved: int
+    seconds_saved: float
     num_tips: int
     num_plays: int
     creator_amounts: List[CreatorAmount]

@@ -46,6 +46,15 @@
                 </v-col>
             </v-row>
         </template>
+        <template v-if="is_end">
+            <v-row>
+                <v-col class="mb-4" cols="12">
+                    <v-alert color="grey" icon="mdi-information" outlined>
+                        The end.
+                    </v-alert>
+                </v-col>
+            </v-row>
+        </template>
     </v-container>
 </template>
 
@@ -54,6 +63,7 @@ import { ref } from 'vue';
 import { ContentService, Podclip } from '@/api';
 
 const is_loading = ref(true);
+const is_end = ref(false);
 const offset = ref(0);
 const podclips = ref<Podclip[]>([]);
 
@@ -76,6 +86,9 @@ function stop() {
 }
 
 function loadMore() {
+    if (is_end.value) {
+        return;
+    }
     offset.value += 10;
     is_loading.value = true;
     ContentService.listPodclips(
@@ -86,6 +99,11 @@ function loadMore() {
         10,
         null,
     ).then((response) => {
+        if (response.results.length == 0) {
+            is_loading.value = false;
+            is_end.value = true;
+            return;
+        }
         response.results.forEach((podclip) => {
             podclips.value.push(podclip);
         });

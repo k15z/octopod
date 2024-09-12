@@ -50,6 +50,7 @@ class MakePlaylistRequest(BaseModel):
 
 class MakePlaylistResponse(BaseModel):
     duration: int
+    source: str
     results: List[Podclip]
 
 

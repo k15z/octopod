@@ -439,6 +439,7 @@ async def playlist(
     for play in recent_plays + recent_skips:
         if play.podclip:
             cf.add(play.podclip)
+
     if recent_plays:
         # User has recent plays, get content-based recommendations.
         query = """
@@ -531,7 +532,7 @@ async def playlist(
                 selectinload(PodclipModel.podcast).selectinload(PodcastModel.creator)
             )
             .order_by(count.desc())
-            .limit(20)
+            .limit(100)
         )
         podclips = result.scalars().all()
 
@@ -568,6 +569,7 @@ async def playlist(
             break
     return MakePlaylistResponse(
         duration=duration,
+        source="model" if recent_plays else "random",
         results=results,
     )
 

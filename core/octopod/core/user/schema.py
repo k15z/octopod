@@ -34,4 +34,6 @@ class UserStatistics(BaseModel):
     lifetime_spend: int
     seconds_listened: int
     seconds_saved: int
+    num_tips: int
+    num_plays: int
     creator_amounts: List[CreatorAmount]

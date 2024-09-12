@@ -106,17 +106,18 @@ async def user_statistics(
 
     query = """
     SELECT
+        COUNT(*) as num_plays,
         sum(podcast.duration-podclip.duration) as seconds_listened
     FROM play_event
     JOIN podclip ON play_event.podclip_id = podclip.id
     JOIN podcast ON play_event.podcast_id = podcast.id
     WHERE user_id = :user_id
     """
-    result = (await db.execute(text(query), {"user_id": token.id})).scalar_one()
+    row = (await db.execute(text(query), {"user_id": token.id})).fetchone()
     if result is None:
-        seconds_saved = 0
+        seconds_saved = num_plays = 0
     else:
-        seconds_saved = int(result)
+        seconds_saved, num_plays = int(row[1]), row[0]
 
     query = """
     SELECT
@@ -136,10 +137,21 @@ async def user_statistics(
         for row in result
     ]
 
+    query = """
+    SELECT
+        COUNT(*) as num_tips
+    FROM tip_event
+    WHERE user_id = :user_id
+    """
+    result = (await db.execute(text(query), {"user_id": token.id})).scalar_one()
+    num_tips = int(result) if result is not None else 0
+
     return UserStatistics(
         weekly_spend=weekly_spend,
         lifetime_spend=lifetime_spend,
         seconds_listened=seconds_listened,
         seconds_saved=seconds_saved,
         creator_amounts=creator_amounts,
+        num_plays=num_plays,
+        num_tips=num_tips,
     )

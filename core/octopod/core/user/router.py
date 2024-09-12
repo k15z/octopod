@@ -29,7 +29,13 @@ async def user_register(
     request: RegisterUserRequest,
     db: AsyncSession = Depends(get_db),
 ) -> Token:
-    user = User(email=request.email, nwc_string=request.nwc_string)
+    user = User(
+        email=request.email,
+        nwc_string=request.nwc_string,
+        first_name=request.first_name,
+        last_name=request.last_name,
+        picture_url=request.picture_url,
+    )
     db.add(user)
     await db.commit()
     await db.refresh(user)
@@ -100,6 +106,8 @@ async def update_user_profile(
         user.last_name = request.last_name
     if request.picture_url is not None:
         user.picture_url = request.picture_url
+    if request.nwc_string is not None:
+        user.nwc_string = request.nwc_string
     await db.commit()
     return UserProfile(
         id=user.id,
@@ -155,7 +163,7 @@ async def user_statistics(
     if row is None:
         seconds_saved = num_plays = 0
     else:
-        seconds_saved, num_plays = int(row[1]), row[0]
+        seconds_saved, num_plays = int(row[1] if row[1] is not None else 0), row[0]
 
     query = """
     SELECT

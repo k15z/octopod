@@ -167,6 +167,9 @@ export type RegisterCreatorRequest = {
 export type RegisterUserRequest = {
     email: string;
     nwc_string: string;
+    first_name: string;
+    last_name: string;
+    picture_url: (string | null);
 };
 
 export type Token = {
@@ -208,6 +211,7 @@ export type UpdateUserRequest = {
     first_name: (string | null);
     last_name: (string | null);
     picture_url: (string | null);
+    nwc_string: (string | null);
 };
 
 export type UserProfile = {

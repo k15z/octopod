@@ -472,10 +472,29 @@ export const RegisterUserRequestSchema = {
         nwc_string: {
             type: 'string',
             title: 'Nwc String'
+        },
+        first_name: {
+            type: 'string',
+            title: 'First Name'
+        },
+        last_name: {
+            type: 'string',
+            title: 'Last Name'
+        },
+        picture_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Picture Url'
         }
     },
     type: 'object',
-    required: ['email', 'nwc_string'],
+    required: ['email', 'nwc_string', 'first_name', 'last_name', 'picture_url'],
     title: 'RegisterUserRequest'
 } as const;
 
@@ -604,10 +623,21 @@ export const UpdateUserRequestSchema = {
                 }
             ],
             title: 'Picture Url'
+        },
+        nwc_string: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Nwc String'
         }
     },
     type: 'object',
-    required: ['first_name', 'last_name', 'picture_url'],
+    required: ['first_name', 'last_name', 'picture_url', 'nwc_string'],
     title: 'UpdateUserRequest'
 } as const;
 

@@ -16,6 +16,7 @@ class UpdateUserRequest(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     picture_url: Optional[str]
+    nwc_string: Optional[str]
 
 
 class CreateUserRequest(BaseModel):
@@ -30,6 +31,9 @@ class GetUserInfoResponse(BaseModel):
 class RegisterUserRequest(BaseModel):
     email: str
     nwc_string: str
+    first_name: str
+    last_name: str
+    picture_url: Optional[str]
 
 
 class CreatorAmount(BaseModel):

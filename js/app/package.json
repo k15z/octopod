@@ -16,6 +16,7 @@
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
     "@types/react-swipeable-views": "^0.13.5",
+    "@uma-sdk/uma-auth-client": "^0.0.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.1",

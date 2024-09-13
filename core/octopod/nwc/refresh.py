@@ -1,7 +1,7 @@
 from time import time
 from octopod.database import SessionLocal
 from octopod.models import User
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 import requests
 
 
@@ -17,7 +17,9 @@ async def refresh_nwc_token(user: User) -> str:
         # TODO: Probably throw an error here and require the user to re-connect their NWC.
         return user.nwc_string
 
-    uma_address = urlparse(user.nwc_string).query.get("lud16")
+    parsed_url = urlparse(user.nwc_string)
+    query_params = parse_qs(parsed_url.query)
+    uma_address = query_params.get("lud16", [None])[0]
     if uma_address is None:
         raise ValueError(
             "NWC connection does not contain an uma address. Can't refresh."
@@ -45,17 +47,16 @@ async def refresh_nwc_token(user: User) -> str:
     )
     token_response.raise_for_status()
     token_json = token_response.json()
-    access_token = token_json.get("access_token")
     access_token_expires_at = time() + token_json.get("expires_in", 0)
     nwc_string = token_json.get("nwc_connection_uri")
     nwc_expires_at = token_json.get("nwc_expires_at")
 
-    with SessionLocal() as session:
-        user.access_token = access_token
+    async with SessionLocal() as session:
         user.access_token_expires_at = access_token_expires_at
         user.nwc_string = nwc_string
         user.nwc_expires_at = nwc_expires_at
-        session.commit()
+        user.nwc_refresh_token = token_json.get("refresh_token")
+        await session.commit()
 
     return nwc_string
 

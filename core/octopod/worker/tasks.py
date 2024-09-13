@@ -6,7 +6,7 @@ import random
 import boto3
 from tqdm import tqdm
 from pydub import AudioSegment  # type: ignore
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from octopod.config import config
 from octopod.database import SessionLocal
@@ -69,6 +69,12 @@ async def set_podcast_duration(podcast_id: UUID, duration: float) -> Podcast:
 
 
 async def handle_podcast(podcast_id: UUID):
+    async with SessionLocal() as session:
+        # Drop existing podclips
+        await session.execute(
+            delete(Podclip).where(Podclip.podcast_id == podcast_id)
+        )
+
     podcast = await set_podcast_status(podcast_id, PodcastStatus.Processing)
 
     path_to_mp3 = download_mp3(podcast.audio_url)

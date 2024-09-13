@@ -1,12 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import {
-  userToken,
-  userRegister,
-  updateUserProfile,
-} from "../api/services.gen";
+import { userToken, userRegister } from "../api/services.gen";
 import { getApiBaseUrl } from "../utils/apiConfig";
-import { useOAuth as useNwcOauth } from "@uma-sdk/uma-auth-client";
-import { NOSTR_ID_NPUB, NOSTR_RELAY_URL } from "../utils/nostr";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -41,43 +35,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       token: storedToken,
     };
   });
-  const nwcOauth = useNwcOauth();
 
   useEffect(() => {
     setIsLoading(false);
   }, []);
-
-  useEffect(() => {
-    if (
-      nwcOauth.nwcConnectionUri &&
-      (!nwcOauth.nwcExpiresAt || nwcOauth.nwcExpiresAt > Date.now()) &&
-      authState.isLoggedIn
-    ) {
-      // if (!nwcOauth.authConfig) {
-      //   nwcOauth.setAuthConfig({
-      //     identityNpub: NOSTR_ID_NPUB,
-      //     identityRelayUrl: NOSTR_RELAY_URL,
-      //     redirectUri: window.location.href,
-      //   });
-      // }
-      // nwcOauth.oAuthTokenExchange().then((tokenState) => {
-      //   if (tokenState.token && tokenState.nwcConnectionUri) {
-      //     updateUserProfile({
-      //       baseUrl: getApiBaseUrl(),
-      //       body: {
-      //         nwc_string: tokenState.nwcConnectionUri,
-      //         first_name: null,
-      //         last_name: null,
-      //         picture_url: null,
-      //       },
-      //       headers: {
-      //         Authorization: `Bearer ${authState.token}`,
-      //       },
-      //     });
-      //   }
-      // });
-    }
-  }, [authState, nwcOauth, nwcOauth.token]);
 
   const login = async (email: string, password: string) => {
     try {

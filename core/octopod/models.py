@@ -46,6 +46,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(unique=True)
     nwc_string: Mapped[str] = mapped_column()
     picture_url: Mapped[Optional[str]] = mapped_column()
+    nwc_refresh_token: Mapped[Optional[str]] = mapped_column()
+    nwc_expires_at: Mapped[Optional[int]] = mapped_column()
+    access_token_expires_at: Mapped[Optional[int]] = mapped_column()
 
 
 class Creator(Base):

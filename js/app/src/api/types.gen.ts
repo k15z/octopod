@@ -170,6 +170,9 @@ export type RegisterUserRequest = {
     first_name: string;
     last_name: string;
     picture_url: (string | null);
+    nwc_refresh_token: (string | null);
+    nwc_expires_at: (number | null);
+    access_token_expires_at: (number | null);
 };
 
 export type Token = {
@@ -212,6 +215,9 @@ export type UpdateUserRequest = {
     last_name: (string | null);
     picture_url: (string | null);
     nwc_string: (string | null);
+    nwc_refresh_token: (string | null);
+    nwc_expires_at: (number | null);
+    access_token_expires_at: (number | null);
 };
 
 export type UserProfile = {

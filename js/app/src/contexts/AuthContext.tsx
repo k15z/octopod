@@ -6,6 +6,7 @@ import {
 } from "../api/services.gen";
 import { getApiBaseUrl } from "../utils/apiConfig";
 import { useOAuth as useNwcOauth } from "@uma-sdk/uma-auth-client";
+import { NOSTR_ID_NPUB, NOSTR_RELAY_URL } from "../utils/nostr";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -16,7 +17,10 @@ interface AuthContextType {
     fullName: string,
     email: string,
     password: string,
-    nwcString: string
+    nwcString: string,
+    nwcRefreshToken: string | undefined,
+    nwcExpiresAt: number | undefined,
+    accessTokenExpiresAt: number | undefined
   ) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -44,7 +48,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    if (nwcOauth.nwcConnectionUri && (!nwcOauth.nwcExpiresAt || nwcOauth.nwcExpiresAt > Date.now()) && authState.isLoggedIn) {
+    if (
+      nwcOauth.nwcConnectionUri &&
+      (!nwcOauth.nwcExpiresAt || nwcOauth.nwcExpiresAt > Date.now()) &&
+      authState.isLoggedIn
+    ) {
+      // if (!nwcOauth.authConfig) {
+      //   nwcOauth.setAuthConfig({
+      //     identityNpub: NOSTR_ID_NPUB,
+      //     identityRelayUrl: NOSTR_RELAY_URL,
+      //     redirectUri: window.location.href,
+      //   });
+      // }
       // nwcOauth.oAuthTokenExchange().then((tokenState) => {
       //   if (tokenState.token && tokenState.nwcConnectionUri) {
       //     updateUserProfile({
@@ -95,7 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     fullName: string,
     email: string,
     password: string,
-    nwcString: string
+    nwcString: string,
+    nwcRefreshToken: string | undefined = undefined,
+    nwcExpiresAt: number | undefined = undefined,
+    accessTokenExpiresAt: number | undefined = undefined
   ) => {
     try {
       const fullNameParts = fullName.split(" ");
@@ -110,6 +128,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           first_name: firstName,
           last_name: lastName,
           picture_url: null, // TODO: Add picture upload
+          nwc_refresh_token: nwcRefreshToken || null,
+          nwc_expires_at: nwcExpiresAt || null,
+          access_token_expires_at: accessTokenExpiresAt || null,
         },
       });
 

@@ -17,6 +17,9 @@ class UpdateUserRequest(BaseModel):
     last_name: Optional[str]
     picture_url: Optional[str]
     nwc_string: Optional[str]
+    nwc_refresh_token: Optional[str]
+    nwc_expires_at: Optional[int]
+    access_token_expires_at: Optional[int]
 
 
 class CreateUserRequest(BaseModel):
@@ -34,6 +37,9 @@ class RegisterUserRequest(BaseModel):
     first_name: str
     last_name: str
     picture_url: Optional[str]
+    nwc_refresh_token: Optional[str]
+    nwc_expires_at: Optional[int]
+    access_token_expires_at: Optional[int]
 
 
 class CreatorAmount(BaseModel):

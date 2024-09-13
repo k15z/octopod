@@ -35,6 +35,9 @@ async def user_register(
         first_name=request.first_name,
         last_name=request.last_name,
         picture_url=request.picture_url,
+        nwc_refresh_token=request.nwc_refresh_token,
+        nwc_expires_at=request.nwc_expires_at,
+        access_token_expires_at=request.access_token_expires_at,
     )
     db.add(user)
     await db.commit()
@@ -108,6 +111,12 @@ async def update_user_profile(
         user.picture_url = request.picture_url
     if request.nwc_string is not None:
         user.nwc_string = request.nwc_string
+    if request.nwc_refresh_token is not None:
+        user.nwc_refresh_token = request.nwc_refresh_token
+    if request.nwc_expires_at is not None:
+        user.nwc_expires_at = request.nwc_expires_at
+    if request.access_token_expires_at is not None:
+        user.access_token_expires_at = request.access_token_expires_at
     await db.commit()
     return UserProfile(
         id=user.id,

@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { Box, TextField, Button, Typography, Alert, Link } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
-import { UmaConnectButton, useOAuth as useNwcOauth } from "@uma-sdk/uma-auth-client";
+import {
+  UmaConnectButton,
+  useOAuth as useNwcOauth,
+} from "@uma-sdk/uma-auth-client";
+import { NOSTR_ID_NPUB, NOSTR_RELAY_URL } from "../utils/nostr";
 
 const SignUpPage: React.FC = () => {
   const [fullName, setFullName] = useState(""); // New state for full name
@@ -12,7 +16,7 @@ const SignUpPage: React.FC = () => {
   const [error, setError] = useState("");
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const { nwcConnectionUri } = useNwcOauth();
+  const { nwcConnectionUri, token, nwcExpiresAt } = useNwcOauth();
 
   useEffect(() => {
     if (nwcConnectionUri) {
@@ -20,12 +24,19 @@ const SignUpPage: React.FC = () => {
     }
   }, [nwcConnectionUri]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     try {
-      await signup(fullName, email, password, nwcString); // Include fullName in signup
+      await signup(
+        fullName,
+        email,
+        password,
+        nwcString,
+        token?.refreshToken,
+        nwcExpiresAt,
+        !!token ? Math.round(token?.expiresAt / 1000) : undefined
+      ); // Include fullName in signup
       navigate("/");
     } catch (error) {
       setError("Sign up failed. Please try again.");
@@ -98,8 +109,8 @@ const SignUpPage: React.FC = () => {
           sx={{ bgcolor: "background.paper", mb: 2 }}
         />
         <UmaConnectButton
-          app-identity-pubkey={"npub1scmpzl2ehnrtnhu289d9rfrwprau9z6ka0pmuhz6czj2ae5rpuhs2l4j9d"}
-          nostr-relay={"wss://nos.lol"}
+          app-identity-pubkey={NOSTR_ID_NPUB}
+          nostr-relay={NOSTR_RELAY_URL}
           redirect-uri={window.location.href}
           required-commands={"pay_invoice,get_balance,make_invoice"}
           style={{
@@ -116,7 +127,7 @@ const SignUpPage: React.FC = () => {
           id="nwcString"
           value={nwcString}
           onChange={(e) => setNwcString(e.target.value)}
-          sx={{ bgcolor: 'background.paper' }}
+          sx={{ bgcolor: "background.paper" }}
         />
         <Button
           type="submit"

@@ -7,6 +7,8 @@ from urllib.parse import urlparse
 
 from octopod.nwc.event import EncryptedDirectMessage, Event
 from octopod.nwc.key import PrivateKey
+from octopod.models import User
+from octopod.nwc.refresh import refresh_nwc_token
 
 
 @dataclass
@@ -82,7 +84,8 @@ class NWCConnection:
         return json.loads(decrypted_content)
 
 
-async def send_to_uma(nwc_connection_uri: str, uma_address: str, amount_sat: int):
+async def send_to_uma(sender: User, uma_address: str, amount_sat: int):
+    nwc_connection_uri = await refresh_nwc_token(sender)
     connection = NWCConnection.from_connection_string(nwc_connection_uri)
     response = await connection.send_nwc_message(
         "pay_to_address",

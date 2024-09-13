@@ -491,10 +491,43 @@ export const RegisterUserRequestSchema = {
                 }
             ],
             title: 'Picture Url'
+        },
+        nwc_refresh_token: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Nwc Refresh Token'
+        },
+        nwc_expires_at: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Nwc Expires At'
+        },
+        access_token_expires_at: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Access Token Expires At'
         }
     },
     type: 'object',
-    required: ['email', 'nwc_string', 'first_name', 'last_name', 'picture_url'],
+    required: ['email', 'nwc_string', 'first_name', 'last_name', 'picture_url', 'nwc_refresh_token', 'nwc_expires_at', 'access_token_expires_at'],
     title: 'RegisterUserRequest'
 } as const;
 
@@ -634,10 +667,43 @@ export const UpdateUserRequestSchema = {
                 }
             ],
             title: 'Nwc String'
+        },
+        nwc_refresh_token: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Nwc Refresh Token'
+        },
+        nwc_expires_at: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Nwc Expires At'
+        },
+        access_token_expires_at: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Access Token Expires At'
         }
     },
     type: 'object',
-    required: ['first_name', 'last_name', 'picture_url', 'nwc_string'],
+    required: ['first_name', 'last_name', 'picture_url', 'nwc_string', 'nwc_refresh_token', 'nwc_expires_at', 'access_token_expires_at'],
     title: 'UpdateUserRequest'
 } as const;
 

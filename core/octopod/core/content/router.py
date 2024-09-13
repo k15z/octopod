@@ -322,7 +322,7 @@ async def tip_podclip(
         user = (await db.execute(select(User).where(User.id == token.id))).scalar()
         assert user is not None
         nwc_response = await send_to_uma(
-            user.nwc_string, podclip.podcast.creator.uma_address, amount
+            user, podclip.podcast.creator.uma_address, amount
         )
     except Exception as e:
         # For now, just log the error and pretend the payment was successful.
@@ -373,7 +373,7 @@ async def play_podclip(
         user = (await db.execute(select(User).where(User.id == token.id))).scalar()
         assert user is not None
         nwc_response = await send_to_uma(
-            user.nwc_string, podclip.podcast.creator.uma_address, amount
+            user, podclip.podcast.creator.uma_address, amount
         )
     except Exception as e:
         # For now, just log the error and pretend the payment was successful.

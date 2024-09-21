@@ -3,12 +3,6 @@
   "name": "Octopod Podcast Player",
   "icons": [
     {
-      "src": "octopod_logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
       "src": "octopod_logo.png",
       "sizes": "512x512",
       "type": "image/png",

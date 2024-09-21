@@ -89,14 +89,14 @@ function loadMore() {
     if (is_end.value) {
         return;
     }
-    offset.value += 10;
+    offset.value += 20;
     is_loading.value = true;
     ContentService.listPodclips(
         '',
         0,
         360000,
         offset.value,
-        10,
+        20,
         null,
     ).then((response) => {
         if (response.results.length == 0) {
@@ -119,7 +119,14 @@ const handleScroll = (event: any) => {
     }
 };
 
-ContentService.listPodclips().then((response) => {
+ContentService.listPodclips(
+    '',
+    0,
+    360000,
+    offset.value,
+    20,
+    null,
+).then((response) => {
     podclips.value = response.results;
     is_loading.value = false;
 });

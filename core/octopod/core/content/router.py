@@ -48,12 +48,11 @@ def partial_shuffle(lst: list):
     For each window of 5 elements, shuffle the elements within the window.
     """
     arr = []
-    for i in range(0, len(lst), 5):
-        x = lst[i : i + 5]
+    for i in range(0, len(lst), 10):
+        x = lst[i : i + 10]
         shuffle(x)
         arr.extend(x)
-    lst.clear()
-    lst.extend(arr)
+    return arr
 
 
 @router.get("/podcast")
@@ -179,7 +178,7 @@ async def list_podclips(
     min_duration: int = 0,
     max_duration: int = 360000,
     offset: int = 0,
-    limit: int = 10,
+    limit: int = 20,
     podcast_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
 ) -> ListPodclipsResponse:
@@ -443,7 +442,11 @@ async def playlist(
     if recent_plays:
         # User has recent plays, get content-based recommendations.
         query = """
-        WITH positive_podclips AS (
+        WITH recently_added_podclips AS (
+            SELECT id FROM podclip
+            ORDER BY created_at DESC
+            LIMIT 50
+        ), positive_podclips AS (
             SELECT
                 podclip.id as id,
                 tip_event.created_at,
@@ -505,6 +508,7 @@ async def playlist(
                 UNION ALL
                 SELECT * FROM podclip_ranking_negative
             ) as x
+            WHERE podclip_id IN (SELECT id FROM recently_added_podclips)
             GROUP BY podclip_id
         )
 
@@ -525,7 +529,7 @@ async def playlist(
         )
         podclips = result.scalars().all()  # Sort to match selected_podclip_ids
         podclips = list(sorted(podclips, key=lambda x: select_ids.index(x.id)))
-        partial_shuffle(podclips)
+        podclips = partial_shuffle(podclips)
 
     else:
         # No recent plays, just get the most popular podcasts.

@@ -183,6 +183,8 @@ async def user_statistics(
     JOIN creator ON payment.creator_id = creator.id
     WHERE user_id = :user_id
     GROUP BY creator_id, creator.name
+    ORDER BY amount DESC
+    LIMIT 5
     """
     result = (await db.execute(text(query), {"user_id": token.id})).fetchall()
     creator_amounts = []

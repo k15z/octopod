@@ -1,37 +1,69 @@
 <template>
     <ion-page>
-        <div style="height:100%; display: flex; align-items: center;">
+        <div style="height:100%; display: flex; align-items: center;" class="gradient">
             <ion-card color="dark" style="width: 100%;">
                 <ion-card-header>
                     <ion-card-title>
-                        <div style="text-align: center;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="18" viewBox="0 0 40 18"
-                                fill="none">
-                                <path
-                                    d="M30.6127 11.5888C30.9753 11.5888 31.2799 11.5259 31.5265 11.4002C31.778 11.2697 31.9762 11.1222 32.1213 10.9578C32.2712 10.7934 32.3727 10.6556 32.4259 10.5444C32.5274 10.3316 32.5854 10.085 32.6 9.80459C32.6126 9.61777 32.6211 9.45169 32.6255 9.30635C32.3053 9.38884 32.0235 9.44143 31.7972 9.48367L31.7876 9.48546C31.425 9.54832 31.1324 9.60634 30.91 9.65953C30.6876 9.71272 30.4918 9.77074 30.3225 9.8336C30.1291 9.91096 29.972 9.99558 29.8511 10.0875C29.7351 10.1745 29.648 10.2712 29.59 10.3776C29.5368 10.4839 29.5102 10.6024 29.5102 10.733C29.5102 10.9119 29.5537 11.0666 29.6408 11.1971C29.7326 11.3229 29.8608 11.4196 30.0252 11.4873C30.1896 11.555 30.3854 11.5888 30.6127 11.5888Z"
-                                    fill="currentColor"></path>
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M0.506832 2.74799C0 3.7427 0 5.04485 0 7.64916V10.3512C0 12.9555 0 14.2577 0.506832 15.2524C0.952653 16.1274 1.66403 16.8387 2.539 17.2846C3.53372 17.7914 4.83587 17.7914 7.44018 17.7914H32.5163C35.1206 17.7914 36.4228 17.7914 37.4175 17.2846C38.2925 16.8387 39.0038 16.1274 39.4497 15.2524C39.9565 14.2577 39.9565 12.9555 39.9565 10.3512V7.64916C39.9565 5.04485 39.9565 3.7427 39.4497 2.74799C39.0038 1.87301 38.2925 1.16164 37.4175 0.715816C36.4228 0.208984 35.1206 0.208984 32.5163 0.208984H7.44018C4.83587 0.208984 3.53372 0.208984 2.539 0.715816C1.66403 1.16164 0.952653 1.87301 0.506832 2.74799ZM30.192 13.1409C29.6311 13.1409 29.1548 13.0345 28.7632 12.8218C28.3763 12.6042 28.0814 12.3165 27.8783 11.9587C27.6801 11.5961 27.5809 11.1971 27.5809 10.762C27.5809 10.3993 27.6101 10.1905 27.7213 9.89067C27.8326 9.59088 28.0075 9.32106 28.2541 9.0938C28.5055 8.86171 28.8516 8.70218 29.1317 8.61725C29.4118 8.53232 29.9345 8.40989 30.2676 8.35398C30.3758 8.33582 30.5032 8.31555 30.649 8.29235L30.6491 8.29234L30.6493 8.29231C30.9523 8.24411 31.3345 8.1833 31.7876 8.10271C32.1373 8.04051 32.4065 7.94077 32.649 7.80203C32.6185 7.44774 32.5103 7.17964 32.3243 6.99772C32.1019 6.78013 31.7296 6.67134 31.2074 6.67134C30.9173 6.67134 30.6151 6.74145 30.3008 6.88167C29.9865 7.02189 29.7665 7.27091 29.6408 7.62872L27.8566 7.06299C28.0548 6.41507 28.4271 5.88802 28.9735 5.48186C29.5199 5.0757 30.2645 4.87262 31.2074 4.87262C31.8988 4.87262 32.5129 4.97899 33.0496 5.19174C33.5863 5.4045 33.9925 5.77198 34.2681 6.29419C34.4228 6.5843 34.5147 6.87442 34.5437 7.16453C34.5727 7.45465 34.5872 7.77861 34.5872 8.13642V12.9233H32.8611V11.9618C32.5494 12.329 32.2182 12.606 31.8674 12.7928C31.4274 13.0249 30.8689 13.1409 30.192 13.1409ZM24.1572 12.9231V8.29575C24.1572 7.77837 24.0339 7.37705 23.7873 7.09177C23.5456 6.80165 23.2095 6.65659 22.7792 6.65659C22.5036 6.65659 22.2642 6.72187 22.0611 6.85242C21.8581 6.97814 21.6985 7.15704 21.5825 7.38914C21.4712 7.61639 21.4156 7.87992 21.4156 8.1797V12.9231H19.4428V8.29575C19.4428 7.77837 19.3195 7.37705 19.073 7.09177C18.8312 6.80165 18.4951 6.65659 18.0648 6.65659C17.6538 6.65659 17.3226 6.79923 17.0711 7.08451C16.8246 7.36496 16.7013 7.73002 16.7013 8.1797V12.9231H14.714V5.08997H16.4547V5.94818C16.6819 5.6683 16.9599 5.43784 17.2887 5.25678C17.7239 5.01986 18.2099 4.90139 18.7466 4.90139C19.3606 4.90139 19.8635 5.03194 20.2552 5.29305C20.5823 5.50848 20.8387 5.78317 21.0243 6.11711C21.2732 5.74915 21.5946 5.45996 21.9886 5.24953C22.419 5.01744 22.8952 4.90139 23.4174 4.90139C24.312 4.90139 24.9865 5.16733 25.441 5.69921C25.9003 6.22625 26.13 6.9177 26.13 7.77354V12.9231H24.1572ZM6.92079 12.8433C7.30762 13.0512 7.80807 13.1552 8.42214 13.1552C9.19095 13.1552 9.82679 12.9884 10.3297 12.6547C10.5683 12.4979 10.7786 12.3181 10.9607 12.1154V12.9231H12.7014V5.08997H10.7141V9.06456C10.7141 9.54809 10.6585 9.93975 10.5472 10.2395C10.4409 10.5345 10.3031 10.7593 10.1338 10.9141C9.96459 11.0639 9.78327 11.1655 9.58986 11.2187C9.39645 11.2719 9.21513 11.2985 9.04589 11.2985C8.62523 11.2985 8.29884 11.2042 8.06675 11.0156C7.83949 10.827 7.6751 10.5925 7.57355 10.3121C7.47201 10.0316 7.41157 9.75359 7.39223 9.47798C7.37289 9.19753 7.36322 8.96786 7.36322 8.78895V5.08997H5.36142V9.48523C5.36142 9.61578 5.37109 9.8237 5.39043 10.109C5.40977 10.3943 5.46538 10.711 5.55725 11.0591C5.64912 11.4024 5.80143 11.7336 6.01418 12.0528C6.23177 12.3719 6.53397 12.6354 6.92079 12.8433Z"
-                                    fill="currentColor"></path>
-                            </svg>
-                        </div>
+                        <ion-text color="light">
+                            <h1 style="font-size: 2rem; font-weight: 700; margin: 0;">Octopod</h1>
+                        </ion-text>
                     </ion-card-title>
+                    <ion-card-subtitle>
+                        <ion-text color="medium">
+                            Podcasting, reimagined.
+                        </ion-text>
+                    </ion-card-subtitle>
                 </ion-card-header>
+
                 <ion-card-content>
-                    <template v-if="!state.uma_address">
-                        <ion-input fill="outline" label="UMA Address" label-placement="floating" v-model="umaAddress"
-                            error-text="Invalid UMA address." @ionInput="validateUMAAddress" @ionFocus="markTouched">
-                            <ion-icon slot="start" src="/currency.svg" aria-hidden="true"></ion-icon>
-                        </ion-input>
-                        <br />
-                        <ion-button color="light" expand="block" @click="umaAuth(umaAddress)">Connect</ion-button>
+                    <template v-if="view === 'login'">
+                        <div style="padding: 0 0.5rem;">
+                            <ion-input label="Email" v-model="data.email" label-placement="stacked"
+                                placeholder="you@octopod.fm" />
+                            <ion-input label="Password" v-model="data.password" label-placement="stacked"
+                                placeholder="••••••••••••••••" type="password">
+                                <ion-input-password-toggle color="light" slot="end"></ion-input-password-toggle>
+                            </ion-input>
+                            <br />
+                            <ion-button color="light" expand="block" @click="login">Login</ion-button>
+                            <br />
+                            <div style="text-align: center; margin-top: 2rem;">
+                                <ion-text color="medium">
+                                    <p style="margin: 0;">
+                                        <a @click="toggleView"
+                                            style="color: var(--ion-color-primary); text-decoration: none;">
+                                            Don't have an account?
+                                        </a>
+                                    </p>
+                                </ion-text>
+                            </div>
+                        </div>
                     </template>
                     <template v-else>
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-                            <p style="margin: 0;">
-                                <b>{{ state.uma_address }}</b>
-                            </p>
-                            <ion-button color="danger" size="small" @click="logout">Disconnect</ion-button>
+                        <div style="padding: 0 0.5rem;">
+                            <ion-input label="Email" v-model="data.email" label-placement="stacked"
+                                placeholder="you@octopod.fm" />
+                            <ion-input label="Password" v-model="data.password" label-placement="stacked"
+                                placeholder="••••••••••••••••" type="password">
+                                <ion-input-password-toggle color="light" slot="end"></ion-input-password-toggle>
+                            </ion-input>
+                            <ion-input label="Confirm Password" v-model="data.confirmPassword" label-placement="stacked"
+                                placeholder="••••••••••••••••" type="password">
+                                <ion-input-password-toggle color="light" slot="end"></ion-input-password-toggle>
+                            </ion-input>
+                            <br />
+                            <ion-button color="light" expand="block">Register</ion-button>
+                            <br />
+                            <div style="text-align: center; margin-top: 2rem;">
+                                <ion-text color="medium">
+                                    <p style="margin: 0;">
+                                        <a @click="toggleView"
+                                            style="color: var(--ion-color-primary); text-decoration: none;">
+                                            Already have an account?
+                                        </a>
+                                    </p>
+                                </ion-text>
+                            </div>
                         </div>
                     </template>
                 </ion-card-content>
@@ -42,151 +74,36 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as oauth from 'oauth4webapi'
-import { IonButton, IonInput, IonIcon, IonCard, IonCardHeader, IonCardTitle, IonCardContent } from '@ionic/vue';
-import { useStorage } from '@vueuse/core'
-import { IonPage } from '@ionic/vue';
+import { useRouter } from 'vue-router';
+import { IonPage, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonInput, IonText, IonInputPasswordToggle } from '@ionic/vue';
+import { userToken } from "@/api"
+import storage from "@/storage"
 
-const NOSTR_RELAY_URL = "wss://nos.lol";
-const NOSTR_ID_NPUB = "npub1scmpzl2ehnrtnhu289d9rfrwprau9z6ka0pmuhz6czj2ae5rpuhs2l4j9d";
-const clientId = `${NOSTR_ID_NPUB} ${NOSTR_RELAY_URL}`;
-
-const route = useRoute();
-const state = useStorage('uma-auth', {
-    uma_address: '',
-    access_token: '',
-    code_verifier: '',
-    csrf_state: '',
-    authorization_endpoint: '',
-    token_endpoint: '',
+const router = useRouter();
+const view = ref('login');
+const data = ref({
+    email: '',
+    password: '',
+    confirmPassword: ''
 })
-const umaAddress = ref("");
 
-const markTouched = (ev: CustomEvent) => {
-    const input = ev.target as HTMLIonInputElement;
-    input.classList.add('ion-touched');
-}
-
-const validateUMAAddress = (ev: CustomEvent) => {
-    const input = ev.target as HTMLIonInputElement;
-    const value = input.value;
-
-    input.classList.remove('ion-valid');
-    input.classList.remove('ion-invalid');
-
-    if (value === '') return;
-
-    if ((value as string).includes("@")) {
-        input.classList.add('ion-valid');
-    } else {
-        input.classList.add('ion-invalid');
-    }
-
-}
-
-const getEndpoints = async (uma: string) => {
-    const umaDomain = uma.split("@")[1];
-    const endpoints = await fetch(`https://${umaDomain}/.well-known/uma-configuration`);
-    return endpoints.json();
-}
-
-const getAuthorizationUrl = async (uma: string) => {
-    const { authorization_endpoint, token_endpoint } = await getEndpoints(uma);
-
-    const codeVerifier = oauth.generateRandomCodeVerifier();
-    const codeChallenge = await oauth.calculatePKCECodeChallenge(codeVerifier);
-    const csrfState = oauth.generateRandomState();
-
-    const authUrl = new URL(authorization_endpoint);
-    authUrl.searchParams.set("client_id", clientId);
-    authUrl.searchParams.set("redirect_uri", "http://localhost:8100/auth");
-    authUrl.searchParams.set("response_type", "code");
-    authUrl.searchParams.set("code_challenge", codeChallenge);
-    authUrl.searchParams.set("code_challenge_method", "S256");
-    authUrl.searchParams.set("state", csrfState);
-    authUrl.searchParams.set("required_commands", "pay_invoice get_balance make_invoice");
-    authUrl.searchParams.set("optional_commands", "");
-    authUrl.searchParams.set("budget", "");
-
-    return {
-        authorization_endpoint,
-        token_endpoint,
-        codeVerifier,
-        authUrl,
-        csrfState,
-    };
+const toggleView = () => {
+    view.value = view.value === 'login' ? 'signup' : 'login';
 };
 
-const getNWCConnection = async (code: string) => {
-    const as: oauth.AuthorizationServer = {
-        issuer: new URL(state.value.authorization_endpoint).origin,
-        authorization_endpoint: state.value.authorization_endpoint,
-        token_endpoint: state.value.token_endpoint,
-        code_challenge_methods_supported: ["S256"],
-        token_endpoint_auth_methods_supported: ["none"],
-    };
-    const params = oauth.validateAuthResponse(
-        as,
-        {
-            "client_id": clientId,
-        },
-        new URLSearchParams({
-            "code": code,
-            "state": state.value.csrf_state,
-        }),
-        state.value.csrf_state
-    );
-
-    const response = await oauth.authorizationCodeGrantRequest(
-        as,
-        {
-            "client_id": clientId,
-            "token_endpoint_auth_method": "none",
-        },
-        oauth.None(),
-        params,
-        "http://localhost:8100/auth",
-        state.value.code_verifier,
-    );
-
-    const result = await oauth.processAuthorizationCodeResponse(
-        as,
-        {
-            "client_id": clientId,
-            "token_endpoint_auth_method": "none",
-        },
-        response,
-    );
-
-    const url = new URL(window.location.href);
-    url.search = '';
-    window.history.replaceState({}, '', url);
-
-    state.value.uma_address = result.uma_address as string;
-    state.value.access_token = result.access_token!;
-}
-
-
-const umaAuth = async (uma_address: string) => {
-    const { codeVerifier, authUrl, csrfState, authorization_endpoint, token_endpoint } = await getAuthorizationUrl(uma_address);
-    state.value.code_verifier = codeVerifier;
-    state.value.csrf_state = csrfState;
-    state.value.authorization_endpoint = authorization_endpoint;
-    state.value.token_endpoint = token_endpoint;
-    window.location.href = authUrl.href;
-}
-
-const logout = () => {
-    state.value.uma_address = '';
-    state.value.access_token = '';
-}
-
-const handleRedirect = async () => {
-    if (route.query.code) {
-        const code = route.query.code as string;
-        await getNWCConnection(code);
+const login = async () => {
+    const res = await userToken({ body: { username: data.value.email, password: data.value.password } });
+    if (res.data) {
+        storage.access_token = res.data.access_token;
+        router.push('/app/home');
+    } else {
+        alert('Invalid credentials');
     }
-}
-handleRedirect();
+};
 </script>
+
+<style scoped>
+.gradient {
+    background-image: linear-gradient(135deg, rgb(106, 205, 99), rgb(78, 103, 205)), linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%);
+}
+</style>

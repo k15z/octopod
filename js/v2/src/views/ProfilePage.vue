@@ -11,6 +11,11 @@
       <ion-grid>
         <ion-row>
           <ion-col>
+            <ion-button color="dark" style="margin: 0;" expand="block" @click="logout">Logout</ion-button>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
             <ion-button style="margin: 0;" expand="block" @click="openUmaAuth">Connect your UMA</ion-button>
           </ion-col>
         </ion-row>
@@ -34,12 +39,17 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { IonHeader, IonContent, IonToolbar, IonButton, IonButtons, IonBackButton, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonPage } from '@ionic/vue';
-
+import { IonHeader, IonContent, IonToolbar, IonButton, IonButtons, IonBackButton, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonPage, IonGrid, IonRow, IonCol } from '@ionic/vue';
+import storage from '../storage';
 
 const router = useRouter();
 
 const openUmaAuth = () => {
+  router.push('/auth');
+}
+
+const logout = () => {
+  storage.access_token = "";
   router.push('/auth');
 }
 </script>

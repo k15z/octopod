@@ -4,11 +4,12 @@ import AppPage from '../views/AppPage.vue';
 import AuthPage from '../views/AuthPage.vue';
 import HomePage from '../views/HomePage.vue';
 import ProfilePage from '../views/ProfilePage.vue';
+import storage from '../storage';
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '',
-    redirect: '/app'
+    redirect: storage.access_token ? '/app' : '/auth'
   },
   {
     path: '/auth',

@@ -37,7 +37,7 @@ playlistApi({
             title: podclip.title,
             subtitle: podclip.podcast.creator_name,
             cover_url: podclip.podcast.cover_url,
-            variant: ["v1", "v2", "v3"][Math.floor(Math.random() * 3)],
+            variant: ["v1", "v2", "v3", "v4", "v5"][Math.floor(Math.random() * 5)],
             url: podclip.audio_url,
         });
     });

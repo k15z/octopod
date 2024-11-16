@@ -62,6 +62,14 @@ const is_playing = computed(() => state.is_playing && state.active_item!.title =
     background-image: linear-gradient(135deg, rgb(255, 122, 226), rgb(78, 205, 196)), linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%);
 }
 
+.vertical-player.v4 {
+    background-image: linear-gradient(135deg, rgb(228, 255, 122), rgb(129, 78, 205)), linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+.vertical-player.v5 {
+    background-image: linear-gradient(135deg, rgb(42, 244, 1), rgb(174, 124, 124)), linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%);
+}
+
 .info-bar {
     position: absolute;
     bottom: 0;

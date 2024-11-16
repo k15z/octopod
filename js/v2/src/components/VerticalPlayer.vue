@@ -4,16 +4,16 @@
             <ion-icon :icon="playCircleOutline"></ion-icon>
         </div>
         <div class="info-bar">
-            <div class="info-bar-content">
-                <div class="thumbnail">
-                    <div class="placeholder-image"></div>
+            <div style="display: flex; padding-bottom: 8px;">
+                <div class="thumbnail" style="flex-shrink: 0;">
+                    <img style="width: 42px; height: 42px; object-fit: cover; border-radius: 8px;" :src="cover_url" />
                 </div>
-                <div class="text-content">
+                <div class="text-content" :class="{ miniplayer: miniplayer }">
                     <h2 class="title">{{ title }}</h2>
                     <p class="subtitle">{{ subtitle }}</p>
                 </div>
-                <ion-progress-bar :value=state.progress color="dark"></ion-progress-bar>
             </div>
+            <ion-progress-bar :value=state.progress color="dark"></ion-progress-bar>
         </div>
     </div>
 </template>
@@ -29,6 +29,7 @@ const props = defineProps<{
     title: string;
     subtitle: string;
     variant: 'v1' | 'v2' | 'v3';
+    cover_url: string;
     url: string;
     miniplayer: boolean;
 }>();
@@ -76,11 +77,15 @@ const is_playing = computed(() => state.is_playing && state.active_item!.title =
 .info-bar .title {
     margin: 0;
     padding: 0;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .info-bar .subtitle {
     margin-top: 0;
     padding-top: 0;
+    font-size: 14px;
+    font-weight: light;
 }
 
 .center-play-button {
@@ -93,11 +98,33 @@ const is_playing = computed(() => state.is_playing && state.active_item!.title =
 .center-play-button.miniplayer {
     justify-content: right;
     padding-right: 20px;
-    padding-bottom: 20px;
+    padding-bottom: 50px;
 }
 
 .center-play-button.miniplayer ::v-deep(ion-icon) {
     font-size: 48px !important;
+}
+
+.title {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.subtitle {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.text-content {
+    flex-grow: 1;
+    padding-left: 16px;
+    width: calc(100% - 100px);
+}
+
+.text-content.miniplayer {
+    margin-right: 64px;
 }
 
 ::v-deep(ion-icon) {

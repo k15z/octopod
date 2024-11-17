@@ -3,7 +3,7 @@
         <div v-if="!is_playing" class="center-play-button" :class="{ miniplayer: miniplayer }">
             <ion-icon :icon="playCircleOutline"></ion-icon>
         </div>
-        <div class="info-bar">
+        <div class="info-bar swiper-no-swiping" @click.stop>
             <div style="display: flex; padding-bottom: 8px;">
                 <div class="thumbnail" style="flex-shrink: 0;">
                     <img style="width: 42px; height: 42px; object-fit: cover; border-radius: 8px;" :src="cover_url" />

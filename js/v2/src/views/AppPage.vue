@@ -37,6 +37,7 @@ const goToProfile = () => {
 }
 
 .ios .header {
-    padding-top: 48px;
+    padding-top: 56px;
+    padding-right: 36px;
 }
 </style>

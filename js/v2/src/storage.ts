@@ -1,6 +1,7 @@
 import {client, userProfile} from '@/api'
 import {toReactive, useStorage} from '@vueuse/core'
 import {watch} from 'vue'
+import { Capacitor } from '@capacitor/core';
 
 const storage = toReactive(useStorage('auth', {
   access_token: '',
@@ -19,15 +20,19 @@ async function checkAccessToken() {
 }
 
 function setClientConfig() {
+  let baseUrl = 'https://octopod.kevz.dev/api';
+  if (Capacitor.getPlatform() === 'web') {
+    baseUrl = 'http://localhost:8000';
+  }
   if (storage.access_token) {
     client.setConfig({
-      baseUrl: 'https://octopod.kevz.dev/api',
+      baseUrl: baseUrl,
       headers: {Authorization: `Bearer ${storage.access_token}`}
     })
     checkAccessToken();
   } else {
     client.setConfig({
-      baseUrl: 'https://octopod.kevz.dev/api',
+      baseUrl: baseUrl,
     })
   }
 }

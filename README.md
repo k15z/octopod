@@ -31,6 +31,7 @@ changes to the API, you can regenerate the client via:
 
 ```
 openapi --input http://127.0.0.1:8000/openapi.json --output ./js/studio/src/api
+npx @hey-api/openapi-ts -i http://localhost:8000/openapi.json -o src/api -c @hey-api/client-fetch
 ```
 
 This will cover most development use cases. But if you also need to actually process podcasts, you 

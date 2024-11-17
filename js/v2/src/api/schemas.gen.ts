@@ -611,6 +611,10 @@ export const RegisterUserRequestSchema = {
             type: 'string',
             title: 'Email'
         },
+        password: {
+            type: 'string',
+            title: 'Password'
+        },
         nwc_string: {
             type: 'string',
             title: 'Nwc String'
@@ -669,7 +673,7 @@ export const RegisterUserRequestSchema = {
         }
     },
     type: 'object',
-    required: ['email', 'nwc_string', 'first_name', 'last_name', 'picture_url', 'nwc_refresh_token', 'nwc_expires_at', 'access_token_expires_at'],
+    required: ['email', 'password', 'nwc_string', 'first_name', 'last_name', 'picture_url', 'nwc_refresh_token', 'nwc_expires_at', 'access_token_expires_at'],
     title: 'RegisterUserRequest'
 } as const;
 

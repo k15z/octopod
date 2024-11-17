@@ -223,6 +223,7 @@ export type RegisterCreatorRequest = {
 
 export type RegisterUserRequest = {
     email: string;
+    password: string;
     nwc_string: string;
     first_name: string;
     last_name: string;

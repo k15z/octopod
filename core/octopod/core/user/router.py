@@ -20,8 +20,19 @@ from octopod.core.user.schema import (
     UpdateUserRequest,
 )
 from octopod.models import User, Podcast
+from passlib.context import CryptContext
 
 router = APIRouter(prefix="/user", tags=["user"])
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 @router.post("/register")
@@ -31,6 +42,7 @@ async def user_register(
 ) -> Token:
     user = User(
         email=request.email,
+        password_hash=hash_password(request.password),
         nwc_string=request.nwc_string,
         first_name=request.first_name,
         last_name=request.last_name,
@@ -56,7 +68,11 @@ async def user_token(
 ) -> Token:
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar()
-    if not user:
+    if not user.password_hash:
+        user.password_hash = hash_password(form_data.password)
+        await db.commit()
+        await db.refresh(user)
+    if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=401,
             detail="Could not validate credentials",

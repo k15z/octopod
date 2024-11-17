@@ -5,6 +5,7 @@ import AuthPage from '../views/AuthPage.vue';
 import HomePage from '../views/HomePage.vue';
 import ProfilePage from '../views/ProfilePage.vue';
 import storage from '../storage';
+import CreatePage from '../views/CreatePage.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -14,6 +15,10 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/auth',
     component: AuthPage
+  },
+  {
+    path: '/create',
+    component: CreatePage
   },
   {
     path: '/app/',

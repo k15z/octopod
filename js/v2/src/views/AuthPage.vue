@@ -1,7 +1,7 @@
 <template>
     <ion-page>
-        <div style="height:100%; display: flex; align-items: center;" class="gradient">
-            <ion-card color="dark" style="width: 100%;">
+        <div style="height:100%; display: flex; align-items: center; justify-content: center;" class="gradient">
+            <ion-card color="dark" style="width: 100%; max-width: 400px;">
                 <ion-card-header>
                     <ion-card-title>
                         <ion-text color="light">
@@ -10,7 +10,7 @@
                     </ion-card-title>
                     <ion-card-subtitle>
                         <ion-text color="medium">
-                            Podcasting, reimagined.
+                            Podcasts, reimagined.
                         </ion-text>
                     </ion-card-subtitle>
                 </ion-card-header>
@@ -52,7 +52,7 @@
                                 <ion-input-password-toggle color="light" slot="end"></ion-input-password-toggle>
                             </ion-input>
                             <br />
-                            <ion-button color="light" expand="block">Register</ion-button>
+                            <ion-button color="light" expand="block" @click="register">Register</ion-button>
                             <br />
                             <div style="text-align: center; margin-top: 2rem;">
                                 <ion-text color="medium">
@@ -73,11 +73,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { IonPage, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonInput, IonText, IonInputPasswordToggle } from '@ionic/vue';
 import { userToken } from "@/api"
 import storage from "@/storage"
+import { userRegister, userProfile } from '@/api';
 
 const router = useRouter();
 const view = ref('login');
@@ -95,15 +96,40 @@ const login = async () => {
     const res = await userToken({ body: { username: data.value.email, password: data.value.password } });
     if (res.data) {
         storage.access_token = res.data.access_token;
-        router.push('/app/home');
+        await nextTick();
+        const profileRes = await userProfile();
+        if (profileRes.data) {
+            if (profileRes.data.first_name && profileRes.data.last_name) {
+                router.push('/app/home');
+            } else {
+                router.push('/create');
+            }
+        } else {
+            alert('Something went wrong');
+        }
     } else {
-        alert('Invalid credentials');
+        alert('Incorrect email or password');
+    }
+};
+
+const register = async () => {
+    const res = await userRegister({
+        body: {
+            email: data.value.email, password: data.value.password,
+            nwc_string: '',
+            first_name: '',
+            last_name: '',
+            picture_url: null,
+            nwc_refresh_token: null,
+            nwc_expires_at: null,
+            access_token_expires_at: null
+        }
+    });
+    if (res.data) {
+        storage.access_token = res.data.access_token;
+        router.push('/create');
+    } else {
+        alert('Something went wrong');
     }
 };
 </script>
-
-<style scoped>
-.gradient {
-    background-image: linear-gradient(135deg, rgb(106, 205, 99), rgb(78, 103, 205)), linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%);
-}
-</style>

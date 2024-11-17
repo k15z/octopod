@@ -80,27 +80,38 @@
         <ion-row>
           <ion-col>
             <ion-card color="dark" style="margin: 0;">
-              <ion-card-content>
-                <div style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
-                  <div v-for="creator in statistics?.creator_amounts" style="display: flex; align-items: center;">
-                    <div style="margin-right: 16px; display: flex; align-items: center;">
-                      <ion-avatar style="width: 48px; height: 48px; margin: 0 auto;">
-                        <img :src="creator?.cover_url || '/podcast.png'" alt="Podcast">
-                      </ion-avatar>
-                    </div>
-                    <div style="display: flex; flex-direction: column; justify-content: center;">
-                      <ion-text
-                        style="font-size: 18px; font-weight: 600; padding: 0; display: block; margin-bottom: 4px; line-height: 1;">
-                        {{ creator.creator }}
-                      </ion-text>
-                      <ion-text
-                        style="font-size: 14px; font-weight: 400; padding: 0; display: block; margin-top: 0; line-height: 1;">
-                        ${{ ((creator.amount ?? 0) / 100.0).toFixed(2) }}
-                      </ion-text>
+              <template v-if="(statistics?.creator_amounts ?? []).length > 0">
+
+                <ion-card-content>
+                  <div style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
+                    <div v-for="creator in statistics?.creator_amounts" style="display: flex; align-items: center;">
+                      <div style="margin-right: 16px; display: flex; align-items: center;">
+                        <ion-avatar style="width: 48px; height: 48px; margin: 0 auto;">
+                          <img :src="creator?.cover_url || '/podcast.png'" alt="Podcast">
+                        </ion-avatar>
+                      </div>
+                      <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <ion-text
+                          style="font-size: 18px; font-weight: 600; padding: 0; display: block; margin-bottom: 4px; line-height: 1;">
+                          {{ creator.creator }}
+                        </ion-text>
+                        <ion-text
+                          style="font-size: 14px; font-weight: 400; padding: 0; display: block; margin-top: 0; line-height: 1;">
+                          ${{ ((creator.amount ?? 0) / 100.0).toFixed(2) }}
+                        </ion-text>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </ion-card-content>
+                </ion-card-content>
+              </template>
+              <template v-else>
+                <ion-card-content style="text-align: center; padding: 128px 0px;">
+                  <ion-text>
+                    <b>No history found!</b><br/>
+                    Time to discover some great podcasts 🎧
+                  </ion-text>
+                </ion-card-content>
+              </template>
             </ion-card>
           </ion-col>
         </ion-row>

@@ -44,6 +44,7 @@ class User(Base):
     first_name: Mapped[str] = mapped_column()
     last_name: Mapped[str] = mapped_column()
     email: Mapped[str] = mapped_column(unique=True)
+    password_hash: Mapped[Optional[str]] = mapped_column()
     nwc_string: Mapped[str] = mapped_column()
     picture_url: Mapped[Optional[str]] = mapped_column()
     nwc_refresh_token: Mapped[Optional[str]] = mapped_column()

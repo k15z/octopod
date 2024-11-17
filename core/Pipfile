@@ -27,6 +27,7 @@ alembic = "*"
 typing-extensions = "*"
 pgvector = "*"
 cryptography = "*"
+passlib = {version = "*", extras = ["bcrypt"]}
 
 [dev-packages]
 mypy = "*"

@@ -33,6 +33,7 @@ class GetUserInfoResponse(BaseModel):
 
 class RegisterUserRequest(BaseModel):
     email: str
+    password: str
     nwc_string: str
     first_name: str
     last_name: str
